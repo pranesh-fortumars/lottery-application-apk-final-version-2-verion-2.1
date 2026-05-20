@@ -5,7 +5,7 @@ import {
   signOut, 
   onAuthStateChanged 
 } from 'firebase/auth';
-import { doc, getDoc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, query, where, getDocs, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { COMMON_REFERRAL_CODE } from '../constants/referralConfig';
 
@@ -24,71 +24,92 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
+    let unsubscribeUserDoc = null;
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setLoading(true);
+      
+      if (unsubscribeUserDoc) {
+        unsubscribeUserDoc();
+        unsubscribeUserDoc = null;
+      }
+
       if (firebaseUser) {
         try {
-          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            
-            // SECURITY GATE: Automatic logout for blocked entities
-            if (userData.status === 'Blocked') {
-              console.warn("Blocked user attempt detected. Terminating session...");
-              await signOut(auth);
-              setUser(null);
+          unsubscribeUserDoc = onSnapshot(doc(db, 'users', firebaseUser.uid), async (userDoc) => {
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
+              
+              // SECURITY GATE: Automatic logout for blocked entities
+              if (userData.status === 'Blocked') {
+                console.warn("Blocked user attempt detected. Terminating session...");
+                await signOut(auth);
+                setUser(null);
+                setLoading(false);
+                return;
+              }
+
+              // SECURITY GATE: Automatic logout for deleted entities
+              if (userData.status === 'Deleted' || userData.isDeleted || userData.active === false) {
+                console.warn("Deleted user attempt detected. Terminating session...");
+                await signOut(auth);
+                setUser(null);
+                setLoading(false);
+                return;
+              }
+
+              setUser({
+                uid: firebaseUser.uid,
+                email: firebaseUser.email,
+                ...userData
+              });
               setLoading(false);
-              return;
-            }
+            } else {
+              // Check if this is an old account that was hard-deleted from the database
+              const creationTime = new Date(firebaseUser.metadata.creationTime).getTime();
+              const now = Date.now();
+              if (now - creationTime > 60000) { // older than 1 minute
+                 console.warn("User document missing for old account (hard-deleted). Terminating session...");
+                 await signOut(auth);
+                 setUser(null);
+                 setLoading(false);
+                 return;
+              }
 
-            // SECURITY GATE: Automatic logout for deleted entities
-            if (userData.status === 'Deleted' || userData.isDeleted || userData.active === false) {
-              console.warn("Deleted user attempt detected. Terminating session...");
-              await signOut(auth);
-              setUser(null);
+              setUser({
+                uid: firebaseUser.uid,
+                email: firebaseUser.email,
+                role: 'user',
+                name: firebaseUser.displayName || 'User',
+                balance: 0,
+                depositedBalance: 0,
+                winningBalance: 0,
+                bonusBalance: 0
+              });
               setLoading(false);
-              return;
             }
-
-            setUser({
-              uid: firebaseUser.uid,
-              email: firebaseUser.email,
-              ...userData
-            });
-          } else {
-            // Check if this is an old account that was hard-deleted from the database
-            const creationTime = new Date(firebaseUser.metadata.creationTime).getTime();
-            const now = Date.now();
-            if (now - creationTime > 60000) { // older than 1 minute
-               console.warn("User document missing for old account (hard-deleted). Terminating session...");
-               await signOut(auth);
-               setUser(null);
-               setLoading(false);
-               return;
-            }
-
-            setUser({
-              uid: firebaseUser.uid,
-              email: firebaseUser.email,
-              role: 'user',
-              name: firebaseUser.displayName || 'User',
-              balance: 0,
-              depositedBalance: 0,
-              winningBalance: 0,
-              bonusBalance: 0
-            });
-          }
+          }, (error) => {
+            console.error("User snapshot error:", error);
+            setUser(null);
+            setLoading(false);
+          });
         } catch (err) {
           console.error("Auth hydration error:", err);
           setUser(null);
+          setLoading(false);
         }
       } else {
         setUser(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      if (unsubscribeUserDoc) {
+        unsubscribeUserDoc();
+      }
+    };
   }, []);
 
   const signup = async (email, password, additionalData) => {
