@@ -152,7 +152,6 @@ export const AuthProvider = ({ children }) => {
       // Save additional user data to Firestore including email for flexible login
       const userData = {
         name: additionalData.name ? additionalData.name.trim() : '',
-        nameLower: additionalData.name ? additionalData.name.trim().toLowerCase() : '',
         mobile: additionalData.mobile ? additionalData.mobile.trim() : '',
         email: additionalData.email ? additionalData.email.trim().toLowerCase() : email.trim().toLowerCase(),
         referral: additionalData.referral ? additionalData.referral.trim() : '',
@@ -193,22 +192,19 @@ export const AuthProvider = ({ children }) => {
         const usersRef = collection(db, 'users');
         const cleanMobile = idTrimmed.replace(/^\+91/, '').replace(/\s+/g, '');
         
-        // Query across mobile, name (exact), nameLower (case-insensitive for new accounts), and email
+        // Query across mobile, name (exact, case-sensitive), and email
         const mobileQuery = query(usersRef, where('mobile', '==', cleanMobile));
         const nameQuery = query(usersRef, where('name', '==', idTrimmed));
-        const nameLowerQuery = query(usersRef, where('nameLower', '==', idLower));
         const emailQuery = query(usersRef, where('email', '==', idLower));
 
-        const [mobileSnap, nameSnap, nameLowerSnap, emailSnap] = await Promise.all([
+        const [mobileSnap, nameSnap, emailSnap] = await Promise.all([
           getDocs(mobileQuery),
           getDocs(nameQuery),
-          getDocs(nameLowerQuery),
           getDocs(emailQuery)
         ]);
 
         let matchedUserDoc = null;
         if (!mobileSnap.empty) matchedUserDoc = mobileSnap.docs[0];
-        else if (!nameLowerSnap.empty) matchedUserDoc = nameLowerSnap.docs[0];
         else if (!nameSnap.empty) matchedUserDoc = nameSnap.docs[0];
         else if (!emailSnap.empty) matchedUserDoc = emailSnap.docs[0];
 
