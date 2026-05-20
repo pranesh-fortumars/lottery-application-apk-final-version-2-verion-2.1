@@ -278,13 +278,13 @@ export const SupportSection = () => {
   
   const supportLinks = [
     { 
-      icon: <img src="https://img.icons8.com/color/48/whatsapp--v1.png" alt="WA" className="w-5 h-5" />, 
+      icon: <img src="https://img.icons8.com/color/48/whatsapp--v1.png" alt="WA" className="w-7 h-7" />, 
       label: 'WhatsApp', 
       color: 'bg-[#E8F5E9]', 
       link: `https://wa.me/${supportNumber}` 
     },
     { 
-      icon: <img src="https://img.icons8.com/color/48/telegram-app.png" alt="TG" className="w-5 h-5" />, 
+      icon: <img src="https://img.icons8.com/color/48/telegram-app.png" alt="TG" className="w-7 h-7" />, 
       label: 'Telegram', 
       color: 'bg-[#E3F2FD]', 
       link: `https://t.me/+${supportNumber}` 
@@ -295,9 +295,9 @@ export const SupportSection = () => {
     <div className="mt-4 px-6 pb-6">
       <div className="bg-white/70 backdrop-blur-md rounded-3xl p-4 border border-gray-100/50 shadow-sm overflow-hidden relative group">
          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between px-1">
+             <div className="flex items-center justify-between px-1">
                <div className="flex items-center gap-3">
-                  <p className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em] italic">Need Support?</p>
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] italic">Need Support?</p>
                   <div className="flex gap-2 items-center">
                      <a 
                        href={supportLinks[0].link} 
@@ -320,25 +320,25 @@ export const SupportSection = () => {
                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
             </div>
             
-            <div className="grid grid-cols-2 gap-2">
+             <div className="grid grid-cols-2 gap-2 mt-2">
                {supportLinks.map((item, idx) => (
                  <a
                    key={idx}
                    href={item.link}
                    target="_blank"
                    rel="noopener noreferrer"
-                   className="flex flex-col items-center justify-center p-2 rounded-2xl border border-gray-100 transition-all group/item hover:bg-white hover:shadow-md hover:-translate-y-0.5"
+                   className="flex flex-col items-center justify-center p-3 rounded-2xl border border-gray-100 transition-all group/item hover:bg-white hover:shadow-md hover:-translate-y-0.5"
                  >
-                   <div className={`w-9 h-9 ${item.color} rounded-xl flex items-center justify-center mb-1 group-hover/item:scale-110 transition-transform`}>
+                   <div className={`w-12 h-12 ${item.color} rounded-2xl flex items-center justify-center mb-2 group-hover/item:scale-110 transition-transform`}>
                      {item.icon}
                    </div>
-                   <p className="text-[8px] font-black text-gray-700 uppercase tracking-tight">{item.label}</p>
+                   <p className="text-[10px] font-black text-gray-700 uppercase tracking-tight">{item.label}</p>
                  </a>
                ))}
-            </div>
-            <p className="text-[7px] font-bold text-gray-300 uppercase tracking-widest text-center mt-1 italic">
-              Official: {displayMobile}
-            </p>
+             </div>
+             <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest text-center mt-2 italic">
+               Official: {displayMobile}
+             </p>
          </div>
       </div>
     </div>

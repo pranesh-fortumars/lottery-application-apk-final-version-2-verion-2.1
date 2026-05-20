@@ -79,14 +79,14 @@ const LoginPage = () => {
             
             <div className="flex gap-4">
               <button 
-                className="flex-1 bg-white border border-gray-100 text-gray-400 py-3 rounded-2xl font-black text-[9px] uppercase tracking-widest hover:border-[#ff0000] hover:text-[#ff0000] transition-all" 
+                className="flex-1 bg-white border border-gray-100 text-gray-500 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:border-[#ff0000] hover:text-[#ff0000] transition-all" 
                 type="button"
                 onClick={() => navigate('/signup')}
               >
                 New Account
               </button>
               <button 
-                className="flex-[2] bg-white border border-gray-100 text-gray-400 py-3 rounded-2xl font-black text-[9px] uppercase tracking-widest hover:border-[#ff0000] hover:text-[#ff0000] transition-all" 
+                className="flex-[2] bg-white border border-gray-100 text-gray-500 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:border-[#ff0000] hover:text-[#ff0000] transition-all" 
                 type="button"
                 onClick={() => navigate('/reset-password')}
               >
