@@ -68,10 +68,11 @@ const AdminUsers = () => {
     }
   };
 
-  const filteredUsers = users.filter(user => 
-    (user.name?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-    (user.mobile?.includes(searchTerm) || '')
-  );
+  const filteredUsers = users.filter(user => {
+    if (user.status === 'Deleted' || user.isDeleted || user.active === false) return false;
+    return (user.name?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+           (user.mobile?.includes(searchTerm) || '');
+  });
 
   return (
     <div className="space-y-10 p-4 pb-24 relative min-h-screen bg-[#f8f9fa]">

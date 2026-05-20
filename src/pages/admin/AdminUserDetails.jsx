@@ -117,11 +117,16 @@ const AdminUserDetails = () => {
   };
 
   const handleDeleteUser = async () => {
-    if (!window.confirm("CRITICAL WARNING: This will permanently purge this user profile from the database. This action is IRREVERSIBLE. Proceed?")) return;
+    if (!window.confirm("CRITICAL WARNING: This will permanently delete this user's access while archiving their records. Proceed?")) return;
 
     try {
-      await deleteDoc(doc(db, 'users', userId));
-      alert("User profile successfully purged from the system.");
+      await updateDoc(doc(db, 'users', userId), { 
+        status: 'Deleted',
+        isDeleted: true,
+        active: false,
+        deletedAt: new Date().toISOString()
+      });
+      alert("User account has been successfully deleted and archived.");
       navigate('/admin/users');
     } catch (error) {
       console.error("Error deleting user:", error);

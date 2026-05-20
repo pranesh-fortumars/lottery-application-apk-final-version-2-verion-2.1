@@ -41,12 +41,32 @@ export const AuthProvider = ({ children }) => {
               return;
             }
 
+            // SECURITY GATE: Automatic logout for deleted entities
+            if (userData.status === 'Deleted' || userData.isDeleted || userData.active === false) {
+              console.warn("Deleted user attempt detected. Terminating session...");
+              await signOut(auth);
+              setUser(null);
+              setLoading(false);
+              return;
+            }
+
             setUser({
               uid: firebaseUser.uid,
               email: firebaseUser.email,
               ...userData
             });
           } else {
+            // Check if this is an old account that was hard-deleted from the database
+            const creationTime = new Date(firebaseUser.metadata.creationTime).getTime();
+            const now = Date.now();
+            if (now - creationTime > 60000) { // older than 1 minute
+               console.warn("User document missing for old account (hard-deleted). Terminating session...");
+               await signOut(auth);
+               setUser(null);
+               setLoading(false);
+               return;
+            }
+
             setUser({
               uid: firebaseUser.uid,
               email: firebaseUser.email,
@@ -171,6 +191,9 @@ export const AuthProvider = ({ children }) => {
           if (userData.status === 'Blocked') {
             return { success: false, message: "Your account has been blocked by the administrator." };
           }
+          if (userData.status === 'Deleted' || userData.isDeleted || userData.active === false) {
+            return { success: false, message: "This account has been deleted. Please contact support." };
+          }
           loginEmail = userData.email || `${userData.mobile}@lottery.com`;
         } else {
           // Fallback check if identifier is a direct email or 10-digit mobile pattern not yet in Firestore metadata
@@ -185,7 +208,22 @@ export const AuthProvider = ({ children }) => {
       }
 
       // 3. Perform Firebase Authentication
-      await signInWithEmailAndPassword(auth, loginEmail, password);
+      const userCredential = await signInWithEmailAndPassword(auth, loginEmail, password);
+      
+      // 4. Verify account status post-authentication to catch hard-deleted or soft-deleted via fallback
+      const sessionUserDocRef = doc(db, 'users', userCredential.user.uid);
+      const sessionUserDoc = await getDoc(sessionUserDocRef);
+      if (!sessionUserDoc.exists()) {
+        await signOut(auth);
+        return { success: false, message: "Account no longer exists." };
+      }
+      
+      const sessionUserData = sessionUserDoc.data();
+      if (sessionUserData.status === 'Deleted' || sessionUserData.isDeleted || sessionUserData.active === false) {
+        await signOut(auth);
+        return { success: false, message: "This account has been deleted. Please contact support." };
+      }
+
       return { success: true };
     } catch (error) {
       // Special Auto-Provisioning for Default Mock Accounts
