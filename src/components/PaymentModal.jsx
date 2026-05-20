@@ -60,9 +60,9 @@ const PaymentModal = ({ isOpen, onClose, amount, onConfirm }) => {
           <div className="p-8 space-y-6">
             {/* QR Code */}
             <div className="flex flex-col items-center justify-center p-6 bg-gray-50 rounded-[2rem] border-2 border-dashed border-gray-200">
-               <div className="relative p-3 bg-white rounded-2xl shadow-xl mb-4 transform hover:scale-105 transition-transform duration-500">
-                  <img src={activePayment.qrUrl} alt="UPI QR Code" className="w-52 h-52" />
-                  <div className="absolute inset-0 border-4 border-gray-50/30 rounded-2xl pointer-events-none"></div>
+               <div className="relative p-4 bg-white rounded-2xl shadow-xl mb-4 transform hover:scale-105 transition-transform duration-500 w-full max-w-[240px] aspect-square flex items-center justify-center">
+                  <img src={activePayment.qrUrl} alt="UPI QR Code" className="w-full h-full object-contain rounded-xl" />
+                  <div className="absolute inset-0 border-4 border-gray-50/50 rounded-2xl pointer-events-none"></div>
                </div>
                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest text-center px-4 leading-relaxed">
                   1. Scan QR with any UPI App<br/>
