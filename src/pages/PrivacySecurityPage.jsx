@@ -1,10 +1,48 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PageWrapper from '../components/PageWrapper';
-import { Shield, Key, DownloadCloud, History, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Shield, Key, DownloadCloud, History, ChevronLeft, ChevronRight, AlertTriangle, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { doc, updateDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase';
 
 const PrivacySecurityPage = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    setIsDeleting(true);
+    try {
+      // 1. Soft delete the user document
+      await updateDoc(doc(db, 'users', user.uid), {
+        status: 'Deleted',
+        isDeleted: true,
+        active: false,
+        deletedAt: new Date().toISOString()
+      });
+
+      // 2. Generate Admin Notification
+      await addDoc(collection(db, 'notifications'), {
+        userId: 'ADMIN',
+        title: '⚠️ Account Deleted',
+        message: `User ${user.name || 'Unknown'} (${user.mobile || 'N/A'} / ${user.email || 'N/A'}) has deleted their account. Final Balance: ₹${user.balance || 0}.`,
+        type: 'alert',
+        timestamp: serverTimestamp(),
+        read: false
+      });
+
+      // 3. Force logout
+      await logout();
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      alert("Failed to delete account. Please try again or contact support.");
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+    }
+  };
 
   const securityOptions = [
     { icon: <Key size={20} />, label: 'Two-Factor Authentication', desc: 'Add an extra layer of security', status: 'Disabled', color: 'text-gray-400' },
@@ -63,12 +101,65 @@ const PrivacySecurityPage = () => {
           ))}
 
           <div className="mt-8 pt-6 border-t border-gray-200 text-center">
-            <button className="text-[10px] font-black text-red-500 uppercase tracking-[0.2em] hover:underline underline-offset-4">
+            <button 
+              onClick={() => setShowDeleteModal(true)}
+              className="text-[10px] font-black text-red-500 uppercase tracking-[0.2em] hover:underline underline-offset-4"
+            >
                Delete Account Permanently
             </button>
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-full blur-3xl"></div>
+            
+            <div className="flex justify-between items-start mb-6 relative z-10">
+              <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center text-red-500">
+                <AlertTriangle size={24} />
+              </div>
+              <button 
+                onClick={() => !isDeleting && setShowDeleteModal(false)}
+                className="w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center text-gray-400 active:scale-95 transition-all"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <h2 className="text-xl font-black font-condensed uppercase tracking-tighter italic text-gray-900 mb-2 relative z-10">
+              Delete Account?
+            </h2>
+            <p className="text-sm text-gray-600 mb-6 font-medium relative z-10">
+              This action is permanent and irreversible. You will immediately lose access to:
+              <ul className="list-disc ml-5 mt-2 space-y-1 text-xs text-gray-500">
+                <li>Your wallet balance and funds</li>
+                <li>Active lottery tickets</li>
+                <li>Transaction and win history</li>
+              </ul>
+            </p>
+
+            <div className="flex gap-3 relative z-10">
+              <button 
+                onClick={() => setShowDeleteModal(false)}
+                disabled={isDeleting}
+                className="flex-1 py-4 bg-gray-100 text-gray-800 rounded-xl font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleDeleteAccount}
+                disabled={isDeleting}
+                className="flex-1 py-4 bg-red-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest active:scale-95 shadow-lg shadow-red-500/30 transition-all disabled:opacity-50"
+              >
+                {isDeleting ? 'Deleting...' : 'Yes, Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </PageWrapper>
   );
 };

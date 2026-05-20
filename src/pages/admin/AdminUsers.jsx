@@ -23,6 +23,7 @@ const AdminUsers = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [users, setUsers] = useState([]);
+  const [showArchived, setShowArchived] = useState(false);
   const [loading, setLoading] = useState(true);
   
   const [newUser, setNewUser] = useState({
@@ -69,7 +70,16 @@ const AdminUsers = () => {
   };
 
   const filteredUsers = users.filter(user => {
-    if (user.status === 'Deleted' || user.isDeleted || user.active === false) return false;
+    const isDeletedUser = user.status === 'Deleted' || user.isDeleted || user.active === false;
+    
+    // If showArchived is true, ONLY show deleted users.
+    // If showArchived is false, ONLY show active users.
+    if (showArchived) {
+      if (!isDeletedUser) return false;
+    } else {
+      if (isDeletedUser) return false;
+    }
+
     return (user.name?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
            (user.mobile?.includes(searchTerm) || '');
   });
@@ -101,17 +111,28 @@ const AdminUsers = () => {
            />
         </div>
         
-        <button 
-          onClick={() => setShowAddForm(true)}
-          className="w-full h-15 bg-gray-900 rounded-2xl font-black text-[11px] text-white uppercase tracking-widest flex items-center justify-center gap-2 shadow-xl active:scale-95 transition-all shadow-black/10"
-        >
-          <UserPlus size={20} className="text-[#f42464]" /> Register New Player
-        </button>
+        <div className="flex gap-3">
+          <button 
+            onClick={() => setShowArchived(!showArchived)}
+            className={`flex-1 h-15 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all border ${showArchived ? 'bg-red-50 text-red-500 border-red-200' : 'bg-white text-gray-500 border-gray-200 shadow-sm'}`}
+          >
+            {showArchived ? 'View Active' : 'View Archived'}
+          </button>
+          
+          <button 
+            onClick={() => setShowAddForm(true)}
+            className="flex-1 h-15 bg-gray-900 rounded-2xl font-black text-[10px] text-white uppercase tracking-widest flex items-center justify-center gap-2 shadow-xl active:scale-95 transition-all shadow-black/10"
+          >
+            <UserPlus size={16} className="text-[#f42464]" /> Register
+          </button>
+        </div>
       </div>
 
       {/* User Cards */}
       <div className="space-y-5">
-        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4 mb-2 italic">Active Member List</p>
+        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4 mb-2 italic">
+          {showArchived ? 'Archived Player List' : 'Active Member List'}
+        </p>
         
         {loading ? (
           <div className="flex justify-center py-10">
