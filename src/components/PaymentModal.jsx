@@ -10,6 +10,7 @@ const PaymentModal = ({ isOpen, onClose, amount, onConfirm }) => {
   const [hasStarted, setHasStarted] = React.useState(false);
   const [transactionId, setTransactionId] = React.useState('');
   const [paidAmount, setPaidAmount] = React.useState('');
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const handleCopy = () => {
     if (activePayment?.upiId) {
@@ -122,16 +123,25 @@ const PaymentModal = ({ isOpen, onClose, amount, onConfirm }) => {
                </div>
 
                <button 
-                  onClick={() => {
+                  disabled={isSubmitting}
+                  onClick={async () => {
                     if (!paidAmount || parseFloat(paidAmount) <= 0) return alert("Please enter the amount you paid");
                     if (!transactionId.trim()) return alert("Please enter Transaction ID");
-                    onConfirm(transactionId, null, paidAmount);
-                    setTransactionId('');
-                    setPaidAmount('');
+                    
+                    setIsSubmitting(true);
+                    try {
+                      await onConfirm(transactionId, null, paidAmount);
+                      setTransactionId('');
+                      setPaidAmount('');
+                    } catch (err) {
+                      console.error("Confirmation error:", err);
+                    } finally {
+                      setIsSubmitting(false);
+                    }
                   }}
-                  className="w-full bg-[#ff0033] text-white py-5 rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-xl shadow-red-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                  className="w-full bg-[#ff0033] text-white py-5 rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-xl shadow-red-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                >
-                  I Have Paid
+                  {isSubmitting ? 'Processing...' : 'I Have Paid'}
                </button>
 
                <button 
