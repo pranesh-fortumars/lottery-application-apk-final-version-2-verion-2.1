@@ -117,16 +117,9 @@ const CartPage = () => {
   const totalUsableBalance = walletBalance + bonusAvailable;
   const remainingToPay = cartTotal - bonusUsed;
   const isFullBonus = remainingToPay === 0;
-  const isProfileComplete = Boolean(user?.accountHolderName && user?.accountNumber && user?.ifscCode && user?.upiId);
 
   const handlePay = async () => {
     if (cart.length === 0 || anyClosed) return;
-    
-    if (!isProfileComplete) {
-      alert("MANDATORY VERIFICATION REQUIRED: Please complete your banking and UPI payout details in your profile before purchasing lottery tickets.");
-      navigate('/settings/personal-info');
-      return;
-    }
 
     if (totalUsableBalance >= cartTotal) {
       // User has enough in wallet (including bonus) to pay directly
@@ -166,10 +159,10 @@ const CartPage = () => {
     <div className="w-full flex gap-3">
       <button 
         onClick={handlePay}
-        disabled={isProcessing || cart.length === 0 || anyClosed || !isProfileComplete}
-        className={`flex-1 text-white py-4 rounded-2xl flex items-center justify-center gap-2 font-black text-sm shadow-[0_15px_30px_-5px_rgba(255,0,85,0.4)] active:scale-95 transition-all disabled:opacity-50 border-b-4 border-black/10 ${anyClosed || !isProfileComplete ? 'bg-gray-400' : 'bg-[#ff0033]'}`}
+        disabled={isProcessing || cart.length === 0 || anyClosed}
+        className={`flex-1 text-white py-4 rounded-2xl flex items-center justify-center gap-2 font-black text-sm shadow-[0_15px_30px_-5px_rgba(255,0,85,0.4)] active:scale-95 transition-all disabled:opacity-50 border-b-4 border-black/10 ${anyClosed ? 'bg-gray-400' : 'bg-[#ff0033]'}`}
       >
-        <ShoppingCart size={20} fill="white" /> {isProcessing ? 'Waiting...' : (anyClosed ? 'Slot Expired' : (!isProfileComplete ? 'Verification Required' : (isFullBonus ? 'Pay with Bonus' : 'Confirm Pay')))}
+        <ShoppingCart size={20} fill="white" /> {isProcessing ? 'Waiting...' : (anyClosed ? 'Slot Expired' : (isFullBonus ? 'Pay with Bonus' : 'Confirm Pay'))}
       </button>
       
       <button 
@@ -189,25 +182,6 @@ const CartPage = () => {
            <ShoppingCart size={24} fill="white" />
            <span className="text-xl font-black uppercase tracking-tight font-serif">Your Cart</span>
         </div>
-
-        {/* Profile Completion Warning */}
-        {!isProfileComplete && (
-          <div className="w-full max-w-sm bg-amber-50 border border-amber-200 p-5 rounded-2xl mb-6 flex flex-col items-center text-center gap-3 shadow-md animate-pulse">
-            <AlertCircle className="text-amber-600" size={28} />
-            <p className="text-xs font-black text-amber-900 uppercase tracking-tight italic">
-              Verification Required
-            </p>
-            <p className="text-[10px] font-bold text-amber-800 leading-relaxed">
-              You must complete your mandatory banking & UPI payout details before purchasing tickets.
-            </p>
-            <button 
-              onClick={() => navigate('/settings/personal-info')}
-              className="w-full bg-amber-500 text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-md active:scale-95 transition-all mt-1"
-            >
-              Complete Verification Now
-            </button>
-          </div>
-        )}
 
         {/* Slot Closure Warning */}
         {anyClosed && (
