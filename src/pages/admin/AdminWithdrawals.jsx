@@ -39,12 +39,8 @@ const AdminWithdrawals = () => {
         processedAt: serverTimestamp() 
       });
 
-      // 2. Deduct from User's Winning Balance & Total Balance
-      // We deduct ONLY from winnings as per the restriction
-      batch.update(userRef, { 
-        winningBalance: increment(-req.amount),
-        balance: increment(-req.amount)
-      });
+      // 2. No balance deduction needed here anymore! 
+      // The balance is already deducted and placed into 'escrow' when the user requested it.
 
       // 3. Create Notification for User
       const notifRef = doc(collection(db, 'notifications'));
@@ -77,6 +73,13 @@ const AdminWithdrawals = () => {
         status: 'rejected',
         rejectionReason: reason,
         rejectedAt: serverTimestamp()
+      });
+
+      // Refund the balance back to the user since the withdrawal was rejected
+      const userRef = doc(db, 'users', req.userId);
+      batch.update(userRef, {
+        winningBalance: increment(req.amount),
+        balance: increment(req.amount)
       });
 
       // Create Notification for User

@@ -4,7 +4,7 @@ import PageWrapper, { SupportSection } from '../components/PageWrapper';
 import { Wallet, ShieldCheck, ArrowUpRight, CheckCircle2, XCircle, AlertTriangle, Zap, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, writeBatch, doc, increment } from 'firebase/firestore';
 
 const WithdrawPage = () => {
   const navigate = useNavigate();
@@ -50,7 +50,10 @@ const WithdrawPage = () => {
 
     setIsProcessing(true);
     try {
-      await addDoc(collection(db, 'withdrawals'), {
+      const batch = writeBatch(db);
+      const withdrawalRef = doc(collection(db, 'withdrawals'));
+      
+      batch.set(withdrawalRef, {
         userId: user.uid,
         userName: user.name || 'Unknown',
         userMobile: user.mobile || 'No Mobile',
@@ -62,6 +65,15 @@ const WithdrawPage = () => {
         status: 'pending',
         timestamp: serverTimestamp()
       });
+
+      // Deduct balance instantly to prevent double-spending
+      const userRef = doc(db, 'users', user.uid);
+      batch.update(userRef, {
+        winningBalance: increment(-withdrawAmt),
+        balance: increment(-withdrawAmt)
+      });
+
+      await batch.commit();
 
       setStatus('success');
       setTimeout(() => navigate('/profile'), 3000);
