@@ -586,7 +586,6 @@ export const CartProvider = ({ children }) => {
 
   const refreshTickets = React.useCallback(async () => {
     if (!user) return;
-    setLoading(true);
     try {
       const ticketsQuery = user.role === 'admin' 
         ? collection(db, 'tickets')
@@ -600,10 +599,10 @@ export const CartProvider = ({ children }) => {
         return timeB - timeA;
       });
       setPurchasedTickets(sortedTickets);
+      // Wait for a smooth UI transition for the pull-to-refresh
+      await new Promise(r => setTimeout(r, 600));
     } catch (error) {
       console.error("Manual refresh error:", error);
-    } finally {
-      setLoading(false);
     }
   }, [user]);
 

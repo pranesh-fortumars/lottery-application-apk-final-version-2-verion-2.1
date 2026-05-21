@@ -24,9 +24,9 @@ import {
 } from 'lucide-react';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../../firebase';
-import { motion, AnimatePresence } from 'framer-motion';
-import { doc, getDoc, collection, query, where, getDocs, orderBy, updateDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, orderBy, updateDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebase';
+import PullToRefresh from '../../components/PullToRefresh';
 
 const AdminUserDetails = () => {
   const { userId } = useParams();
@@ -40,26 +40,30 @@ const AdminUserDetails = () => {
   const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        // Fetch base user data
-        const userDoc = await getDoc(doc(db, 'users', userId));
-        if (userDoc.exists()) {
-          const userData = { id: userDoc.id, ...userDoc.data() };
-          setUser(userData);
-          setEditData({
-            name: userData.name || '',
-            mobile: userData.mobile || '',
-            email: userData.email || '',
-            accountHolderName: userData.accountHolderName || '',
-            accountNumber: userData.accountNumber || '',
-            ifscCode: userData.ifscCode || '',
-            upiId: userData.upiId || ''
-          });
+    let unsubscribeUser;
+    let unsubscribeTickets;
 
-          // Fetch user tickets for stats and activity - Removed orderBy to avoid index errors
-          const ticketsQuery = query(collection(db, 'tickets'), where('userId', '==', userId));
-          const ticketsSnap = await getDocs(ticketsQuery);
+    const setupListeners = () => {
+      try {
+        unsubscribeUser = onSnapshot(doc(db, 'users', userId), (userDoc) => {
+          if (userDoc.exists()) {
+            const userData = { id: userDoc.id, ...userDoc.data() };
+            setUser(userData);
+            setEditData({
+              name: userData.name || '',
+              mobile: userData.mobile || '',
+              email: userData.email || '',
+              accountHolderName: userData.accountHolderName || '',
+              accountNumber: userData.accountNumber || '',
+              ifscCode: userData.ifscCode || '',
+              upiId: userData.upiId || ''
+            });
+          }
+          setLoading(false);
+        });
+
+        const ticketsQuery = query(collection(db, 'tickets'), where('userId', '==', userId));
+        unsubscribeTickets = onSnapshot(ticketsQuery, (ticketsSnap) => {
           const ticketsList = ticketsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
             .sort((a, b) => {
               const timeA = a.timestamp?.toMillis ? a.timestamp.toMillis() : 0;
@@ -80,7 +84,6 @@ const AdminUserDetails = () => {
             won: totalWonValue
           });
 
-          // Create activity feed from tickets
           const activityFeed = ticketsList.slice(0, 10).map(t => ({
              id: t.id,
              type: t.status === 'Won' ? 'Win' : 'Purchase',
@@ -90,16 +93,24 @@ const AdminUserDetails = () => {
           }));
 
           setActivity(activityFeed);
-        }
-        setLoading(false);
+        });
       } catch (error) {
-        console.error("Error fetching user details:", error);
+        console.error("Error setting up listeners:", error);
         setLoading(false);
       }
     };
 
-    fetchUserData();
+    setupListeners();
+
+    return () => {
+      if (unsubscribeUser) unsubscribeUser();
+      if (unsubscribeTickets) unsubscribeTickets();
+    };
   }, [userId]);
+
+  const handleRefresh = async () => {
+    await new Promise(r => setTimeout(r, 600));
+  };
 
   const handleToggleBlock = async () => {
     if (!user) return;
@@ -197,18 +208,11 @@ const AdminUserDetails = () => {
       </div>
     );
   }
-
-  if (!user) {
-    return (
-      <div className="p-10 text-center">
-        <p className="font-black uppercase tracking-widest text-gray-400">User Profile Not Found</p>
-        <button onClick={() => navigate('/admin/users')} className="mt-4 text-[#f42464] font-black uppercase text-[10px] tracking-widest">Return to Directory</button>
-      </div>
-    );
-  }
+  if (loading || !user) return <div className="p-8 text-center font-bold text-gray-500 uppercase">Loading Profile...</div>;
 
   return (
-    <div className="space-y-10 p-4 pb-32 min-h-screen bg-[#f8f9fa]">
+    <PullToRefresh onRefresh={handleRefresh}>
+      <div className="space-y-6 p-4 pb-24 relative min-h-screen bg-[#f8f9fa]">
       {/* Navigation & Header */}
       <div className="border-[1.5px] border-[#ff004d] rounded-[2.5rem] p-8 bg-white shadow-2xl relative overflow-hidden group">
          <div className="absolute top-0 right-0 w-32 h-32 bg-[#ff004d]/5 rounded-full blur-3xl"></div>
@@ -409,13 +413,7 @@ const AdminUserDetails = () => {
       {/* Edit Profile Modal */}
       <AnimatePresence>
         {showEditModal && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex items-end justify-center p-4 pb-10"
-            onClick={() => setShowEditModal(false)}
-          >
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[2000] flex items-center justify-center p-4">
             <motion.div 
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
@@ -476,7 +474,7 @@ const AdminUserDetails = () => {
                 </button>
               </form>
             </motion.div>
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
       
@@ -484,6 +482,7 @@ const AdminUserDetails = () => {
          <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.3em] italic">Full Trace Audit Record #{user.id.slice(0, 6)}</p>
       </div>
     </div>
+    </PullToRefresh>
   );
 };
 

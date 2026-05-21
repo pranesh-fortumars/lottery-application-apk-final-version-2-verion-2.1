@@ -12,7 +12,8 @@ import {
   Zap,
   Landmark
 } from 'lucide-react';
-import { getAllUsers, subscribeToResults, getTickets } from '../../services/firebaseService';
+import { subscribeToUsers, subscribeToResults, subscribeToTickets } from '../../services/firebaseService';
+import PullToRefresh from '../../components/PullToRefresh';
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState([
@@ -27,46 +28,71 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     let unsubscribeResults;
+    let unsubscribeUsers;
+    let unsubscribeTickets;
 
-    const fetchData = async () => {
-      try {
-        const users = await getAllUsers();
-        const tickets = await getTickets();
-        
-        // Basic stats calculation
-        const now = new Date();
-        const todayStr = now.toLocaleDateString();
-        
-        const todayTicketsCount = tickets.filter(t => {
-           if (!t.timestamp) return false;
-           return t.timestamp.toDate().toLocaleDateString() === todayStr;
-        }).length;
+    const calculateStats = (usersData, ticketsData) => {
+      const now = new Date();
+      const todayStr = now.toLocaleDateString();
+      
+      const todayTicketsCount = ticketsData.filter(t => {
+         if (!t.timestamp) return false;
+         return t.timestamp.toDate().toLocaleDateString() === todayStr;
+      }).length;
 
-        const totalRevenue = tickets.reduce((sum, t) => sum + (parseFloat(t.price || 0) * (t.qty || 1)), 0);
+      const totalRevenue = ticketsData.reduce((sum, t) => sum + (parseFloat(t.price || 0) * (t.qty || 1)), 0);
 
-        setStats([
-          { label: 'Total Users', value: users.length.toString(), icon: Users, change: '+0%', color: 'from-blue-500 to-blue-600', bg: 'bg-blue-50' },
-          { label: 'Today Tickets', value: todayTicketsCount.toString(), icon: Ticket, change: '+0%', color: 'from-[#f42464] to-[#ff004d]', bg: 'bg-[#fce4ec]' },
-          { label: 'Revenue (Lifetime)', value: `₹${totalRevenue.toLocaleString()}`, icon: Wallet, change: '+0%', color: 'from-emerald-500 to-emerald-600', bg: 'bg-emerald-50' },
-          { label: 'Active Sessions', value: 'Live', icon: TrendingUp, change: 'Stable', color: 'from-orange-500 to-orange-600', bg: 'bg-orange-50' },
-        ]);
-
-        unsubscribeResults = subscribeToResults((results) => {
-           setRecentDraws(results.slice(0, 4));
-        });
-
-        setLoading(false);
-      } catch (error) {
-        console.error("Dashboard data fetch error:", error);
-      }
+      setStats([
+        { label: 'Total Users', value: usersData.length.toString(), icon: Users, change: '+0%', color: 'from-blue-500 to-blue-600', bg: 'bg-blue-50' },
+        { label: 'Today Tickets', value: todayTicketsCount.toString(), icon: Ticket, change: '+0%', color: 'from-[#f42464] to-[#ff004d]', bg: 'bg-[#fce4ec]' },
+        { label: 'Revenue (Lifetime)', value: `₹${totalRevenue.toLocaleString()}`, icon: Wallet, change: '+0%', color: 'from-emerald-500 to-emerald-600', bg: 'bg-emerald-50' },
+        { label: 'Active Sessions', value: 'Live', icon: TrendingUp, change: 'Stable', color: 'from-orange-500 to-orange-600', bg: 'bg-orange-50' },
+      ]);
+      setLoading(false);
     };
 
-    fetchData();
-    return () => unsubscribeResults && unsubscribeResults();
+    let latestUsers = [];
+    let latestTickets = [];
+    let usersLoaded = false;
+    let ticketsLoaded = false;
+
+    try {
+      unsubscribeUsers = subscribeToUsers((users) => {
+        latestUsers = users;
+        usersLoaded = true;
+        if (usersLoaded && ticketsLoaded) calculateStats(latestUsers, latestTickets);
+      });
+
+      unsubscribeTickets = subscribeToTickets((tickets) => {
+        latestTickets = tickets;
+        ticketsLoaded = true;
+        if (usersLoaded && ticketsLoaded) calculateStats(latestUsers, latestTickets);
+      });
+
+      unsubscribeResults = subscribeToResults((results) => {
+         setRecentDraws(results.slice(0, 4));
+      });
+
+    } catch (error) {
+      console.error("Dashboard data fetch error:", error);
+      setLoading(false);
+    }
+
+    return () => {
+      if (unsubscribeResults) unsubscribeResults();
+      if (unsubscribeUsers) unsubscribeUsers();
+      if (unsubscribeTickets) unsubscribeTickets();
+    };
   }, []);
 
+  const handleRefresh = async () => {
+    // Since listeners are active, just provide a smooth UI delay
+    await new Promise(r => setTimeout(r, 600));
+  };
+
   return (
-    <div className="space-y-10 pb-20 p-4">
+    <PullToRefresh onRefresh={handleRefresh}>
+      <div className="space-y-10 pb-20 p-4">
       {/* Premium Admin Header */}
       <div className="border-[1.5px] border-[#ff004d] rounded-[2.5rem] p-6 bg-white shadow-2xl relative overflow-hidden group">
          <div className="absolute top-0 right-0 w-32 h-32 bg-[#ff004d]/5 rounded-full blur-3xl"></div>
@@ -201,7 +227,8 @@ const AdminDashboard = () => {
            </div>
         </div>
       </div>
-    </div>
+      </div>
+    </PullToRefresh>
   );
 };
 

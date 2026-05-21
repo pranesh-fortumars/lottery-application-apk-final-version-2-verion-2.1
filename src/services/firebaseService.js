@@ -93,6 +93,19 @@ export const getTickets = async (userId = null) => {
   return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
 
+export const subscribeToTickets = (callback, userId = null) => {
+  let q = collection(db, 'tickets');
+  if (userId) {
+    q = query(q, where('userId', '==', userId), orderBy('timestamp', 'desc'));
+  } else {
+    q = query(q, orderBy('timestamp', 'desc'));
+  }
+  return onSnapshot(q, (snapshot) => {
+    const tickets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    callback(tickets);
+  });
+};
+
 // --- App Settings ---
 
 export const getAppSettings = async () => {

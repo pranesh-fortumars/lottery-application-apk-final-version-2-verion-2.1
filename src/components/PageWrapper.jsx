@@ -25,6 +25,7 @@ import {
   ChevronLeft,
   Wallet
 } from 'lucide-react';
+import PullToRefresh from './PullToRefresh';
 
 export const Header = ({ title, showBack = false }) => {
   const navigate = useNavigate();
@@ -347,6 +348,7 @@ export const SupportSection = () => {
 
 const PageWrapper = ({ children, title, showNav = true, showHeader = true, showBack = false, footerAction = null }) => {
   const { appSettings, loading } = useCart();
+  const { refreshTickets } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -392,7 +394,9 @@ const PageWrapper = ({ children, title, showNav = true, showHeader = true, showB
         transition={{ duration: 0.2 }}
         className="flex-grow bg-[#f9f9f9] overflow-y-auto scrollbar-hide pb-10"
       >
-        {children}
+        <PullToRefresh onRefresh={refreshTickets}>
+          {children}
+        </PullToRefresh>
       </motion.main>
       
       {/* Footer Area: Actions above BottomNav */}
