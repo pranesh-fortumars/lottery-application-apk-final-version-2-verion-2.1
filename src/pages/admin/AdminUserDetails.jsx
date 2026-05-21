@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../../firebase';
+import { motion, AnimatePresence } from 'framer-motion';
 import { doc, getDoc, collection, query, where, getDocs, orderBy, updateDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebase';
 import PullToRefresh from '../../components/PullToRefresh';
