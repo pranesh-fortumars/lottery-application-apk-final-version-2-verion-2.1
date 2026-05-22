@@ -328,15 +328,17 @@ const ProfilePage = () => {
 
         {!isAdmin && <SupportSection />}
 
-        <div className="p-8 text-center border-t border-gray-50 mt-4 opacity-40 space-y-2">
+        <div className="p-6 mx-6 mb-6 text-center border border-[#ff0033]/20 bg-[#ff0033]/5 rounded-2xl space-y-2 shadow-sm">
            {user?.createdAt && (
-              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                 Account Created: {user.createdAt?.toDate ? user.createdAt.toDate().toLocaleString('en-IN') : new Date(user.createdAt).toLocaleString('en-IN')}
+              <p className="text-[11px] text-gray-800 font-black uppercase tracking-widest flex items-center justify-center gap-2">
+                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                 Account Created: <span className="text-[#ff0033]">{user.createdAt?.toDate ? user.createdAt.toDate().toLocaleString('en-IN') : new Date(user.createdAt).toLocaleString('en-IN')}</span>
               </p>
            )}
-           <p className="text-[9px] text-gray-300 font-bold uppercase tracking-[0.2em] italic leading-tight">
-              App Version: {APP_VERSION}<br/>
-              Build: {BUILD_VERSION}
+           <div className="w-16 h-[1px] bg-gray-200 mx-auto my-2"></div>
+           <p className="text-[10px] text-gray-600 font-bold uppercase tracking-[0.2em] italic leading-tight">
+              App Version: <span className="text-gray-900 font-black">{APP_VERSION}</span><br/>
+              Build: <span className="text-gray-900 font-black">{BUILD_VERSION}</span>
            </p>
         </div>
       </div>

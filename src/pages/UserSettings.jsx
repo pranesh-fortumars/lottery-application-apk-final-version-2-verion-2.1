@@ -58,9 +58,11 @@ const UserSettings = () => {
           Terminate Session
         </button>
 
-        <div className="mt-auto mb-10 text-center opacity-30 space-y-1">
-           <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.3em] italic">App Version: {APP_VERSION}</p>
-           <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest italic">Build: {BUILD_VERSION}</p>
+        <div className="mt-auto mb-6 mx-6 p-4 text-center border border-[#ff0033]/20 bg-[#ff0033]/5 rounded-2xl shadow-sm space-y-1">
+           <p className="text-[10px] text-gray-600 font-bold uppercase tracking-[0.2em] italic leading-tight">
+              App Version: <span className="text-gray-900 font-black">{APP_VERSION}</span><br/>
+              Build: <span className="text-gray-900 font-black">{BUILD_VERSION}</span>
+           </p>
         </div>
       </div>
     </PageWrapper>

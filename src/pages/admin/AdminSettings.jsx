@@ -420,6 +420,57 @@ const DatabaseCleanseSettings = () => {
   );
 };
 
+const IntegrationSettings = () => {
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSyncTimestamps = async () => {
+    if (!window.confirm("This will scan all legacy users and assign a permanent migration timestamp to accounts missing creation dates. Continue?")) return;
+    
+    setSyncing(true);
+    try {
+      const snapshot = await getDocs(collection(db, 'users'));
+      const batch = writeBatch(db);
+      let updatedCount = 0;
+      
+      const defaultMigrationDate = new Date('2024-01-01T00:00:00Z').toISOString();
+      
+      snapshot.forEach(userDoc => {
+        const data = userDoc.data();
+        if (!data.createdAt) {
+          batch.update(userDoc.ref, { createdAt: defaultMigrationDate });
+          updatedCount++;
+        }
+      });
+      
+      if (updatedCount > 0) {
+        await batch.commit();
+        alert(`Successfully synchronized ${updatedCount} legacy accounts with migration timestamps.`);
+      } else {
+        alert("All users already have creation timestamps. No legacy sync needed.");
+      }
+    } catch (error) {
+      console.error("Sync error:", error);
+      alert("Failed to synchronize timestamps: " + error.message);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4 py-4">
+       <SettingRow label="Legacy Data Synchronization" desc="Assign permanent migration timestamps to historical users missing creation data.">
+          <button 
+             disabled={syncing}
+             onClick={handleSyncTimestamps}
+             className="w-full py-5 bg-blue-50 text-blue-600 rounded-2xl border border-blue-100 font-black text-[11px] uppercase tracking-widest shadow-sm active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+             <Clock size={16} /> {syncing ? 'SCANNING ACCOUNTS...' : 'Sync Legacy Timestamps'} 
+          </button>
+       </SettingRow>
+    </div>
+  );
+};
+
 const AdminSettings = () => {
   const [activeTab, setActiveTab] = useState('General');
   const { activePayment } = usePayment();
@@ -582,7 +633,11 @@ const AdminSettings = () => {
             <DatabaseCleanseSettings />
           )}
 
-         {activeTab !== 'Cleanse' && activeTab !== 'Profile' && (
+          {activeTab === 'Integration' && (
+            <IntegrationSettings />
+          )}
+
+         {activeTab !== 'Cleanse' && activeTab !== 'Profile' && activeTab !== 'Integration' && (
           <div className="pt-10 grid grid-cols-2 gap-4">
             <button className="py-5 bg-gray-900 text-white rounded-2xl font-black text-[12px] uppercase tracking-widest shadow-xl shadow-black/10 active:scale-95 transition-all">
                Store Global Config
@@ -594,12 +649,14 @@ const AdminSettings = () => {
          )}
       </div>
       
-      <div className="pt-8 text-center opacity-30 space-y-1">
-         <p className="text-[9px] font-black text-gray-500 uppercase tracking-[0.2em]">
-            Admin Core System: {APP_VERSION}
+      <div className="mt-8 p-6 mx-4 text-center border border-[#ff004d]/20 bg-[#ff004d]/5 rounded-2xl shadow-sm space-y-2">
+         <p className="text-[11px] text-gray-800 font-black uppercase tracking-widest flex items-center justify-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Admin Core System: <span className="text-[#ff004d]">{APP_VERSION}</span>
          </p>
-         <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest italic">
-            Build: {BUILD_VERSION}
+         <div className="w-16 h-[1px] bg-gray-200 mx-auto my-2"></div>
+         <p className="text-[10px] text-gray-600 font-bold uppercase tracking-[0.2em] italic leading-tight">
+            Build: <span className="text-gray-900 font-black">{BUILD_VERSION}</span>
          </p>
       </div>
     </div>

@@ -228,12 +228,14 @@ const AdminDashboard = () => {
            </div>
         </div>
 
-        <div className="pt-8 pb-4 text-center opacity-30 space-y-1 border-t border-gray-200 mt-8">
-           <p className="text-[9px] font-black text-gray-500 uppercase tracking-[0.2em]">
-              Admin Core System: {APP_VERSION}
+        <div className="mt-8 p-6 text-center border border-[#f42464]/20 bg-[#f42464]/5 rounded-2xl shadow-sm space-y-2">
+           <p className="text-[11px] text-gray-800 font-black uppercase tracking-widest flex items-center justify-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Admin Core System: <span className="text-[#f42464]">{APP_VERSION}</span>
            </p>
-           <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest italic">
-              Build: {BUILD_VERSION}
+           <div className="w-16 h-[1px] bg-gray-200 mx-auto my-2"></div>
+           <p className="text-[10px] text-gray-600 font-bold uppercase tracking-[0.2em] italic leading-tight">
+              Build: <span className="text-gray-900 font-black">{BUILD_VERSION}</span>
            </p>
         </div>
       </div>

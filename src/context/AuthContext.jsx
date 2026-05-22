@@ -58,6 +58,19 @@ export const AuthProvider = ({ children }) => {
                 return;
               }
 
+              // BACKFILL MISSING CREATED TIMESTAMP FROM AUTH RECORD
+              if (!userData.createdAt && firebaseUser.metadata?.creationTime) {
+                 try {
+                    const authCreationTime = new Date(firebaseUser.metadata.creationTime).toISOString();
+                    await updateDoc(doc(db, 'users', firebaseUser.uid), {
+                       createdAt: authCreationTime
+                    });
+                    userData.createdAt = authCreationTime;
+                 } catch (e) {
+                    console.error("Failed to backfill creation time:", e);
+                 }
+              }
+
               setUser({
                 uid: firebaseUser.uid,
                 email: firebaseUser.email,
