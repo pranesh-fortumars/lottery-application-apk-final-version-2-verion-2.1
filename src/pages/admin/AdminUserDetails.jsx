@@ -241,6 +241,11 @@ const AdminUserDetails = () => {
                  <span className="bg-gray-50 text-gray-400 px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border border-gray-100">
                     ID: #{user.id.slice(0, 8)}
                  </span>
+                 {user.createdAt && (
+                   <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border border-blue-100 flex items-center gap-1">
+                      <Info size={10} /> Joined: {user.createdAt?.toDate ? user.createdAt.toDate().toLocaleDateString('en-IN') : new Date(user.createdAt).toLocaleDateString('en-IN')}
+                   </span>
+                 )}
                </div>
             </div>
          </div>

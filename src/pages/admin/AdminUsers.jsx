@@ -156,6 +156,11 @@ const AdminUsers = () => {
                     <div>
                        <h4 className="font-black text-gray-800 text-sm tracking-tight uppercase italic">{user.name || 'Anonymous'}</h4>
                        <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-1">{user.mobile || 'No Mobile'}</p>
+                       {user.createdAt && (
+                          <p className="text-[8px] text-gray-300 font-bold uppercase tracking-widest mt-0.5">
+                             Joined: {user.createdAt?.toDate ? user.createdAt.toDate().toLocaleDateString('en-IN') : new Date(user.createdAt).toLocaleDateString('en-IN')}
+                          </p>
+                       )}
                     </div>
                  </div>
                   <div className="text-right flex items-center gap-4 relative z-10">

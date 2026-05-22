@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import PageWrapper, { SupportSection } from '../components/PageWrapper';
 import { useAuth } from '../context/AuthContext';
 import { useState, useEffect } from 'react';
+import { APP_VERSION, BUILD_VERSION } from '../config';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import { sendPasswordResetEmail } from 'firebase/auth';
@@ -327,8 +328,16 @@ const ProfilePage = () => {
 
         {!isAdmin && <SupportSection />}
 
-        <div className="p-8 text-center border-t border-gray-50 mt-4 opacity-30">
-           <p className="text-[9px] text-gray-300 font-bold uppercase tracking-[0.3em] font-serif italic italic leading-tight">SMS Lottery Secretariat Suite v4.5.1</p>
+        <div className="p-8 text-center border-t border-gray-50 mt-4 opacity-40 space-y-2">
+           {user?.createdAt && (
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                 Account Created: {user.createdAt?.toDate ? user.createdAt.toDate().toLocaleString('en-IN') : new Date(user.createdAt).toLocaleString('en-IN')}
+              </p>
+           )}
+           <p className="text-[9px] text-gray-300 font-bold uppercase tracking-[0.2em] italic leading-tight">
+              App Version: {APP_VERSION}<br/>
+              Build: {BUILD_VERSION}
+           </p>
         </div>
       </div>
 

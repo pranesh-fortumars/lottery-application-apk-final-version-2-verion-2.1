@@ -32,6 +32,7 @@ import { useAuth } from '../../context/AuthContext';
 import { doc, updateDoc, collection, getDocs, deleteDoc, writeBatch, query } from 'firebase/firestore';
 import { db, auth } from '../../firebase';
 import { sendPasswordResetEmail } from 'firebase/auth';
+import { APP_VERSION, BUILD_VERSION } from '../../config';
 
 const SettingRow = ({ label, desc, children }) => (
   <div className="flex flex-col justify-between items-start py-8 gap-4 first:pt-4 last:pb-4 border-b border-gray-50 last:border-none group">
@@ -593,8 +594,13 @@ const AdminSettings = () => {
          )}
       </div>
       
-      <div className="pt-8 text-center opacity-30">
-         <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.3em] italic">Encryption Layer v9.42 | System Status: Optimal</p>
+      <div className="pt-8 text-center opacity-30 space-y-1">
+         <p className="text-[9px] font-black text-gray-500 uppercase tracking-[0.2em]">
+            Admin Core System: {APP_VERSION}
+         </p>
+         <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest italic">
+            Build: {BUILD_VERSION}
+         </p>
       </div>
     </div>
   );

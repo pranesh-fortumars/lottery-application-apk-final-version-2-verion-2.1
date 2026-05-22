@@ -3,6 +3,7 @@ import PageWrapper from '../components/PageWrapper';
 import { Bell, Lock, Shield, User, ChevronRight, HelpCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { APP_VERSION, BUILD_VERSION } from '../config';
 
 const UserSettings = () => {
   const { user, logout } = useAuth();
@@ -57,8 +58,9 @@ const UserSettings = () => {
           Terminate Session
         </button>
 
-        <div className="mt-auto mb-10 text-center opacity-30">
-           <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.3em] italic">SMS Lottery Security Protocol v2.1</p>
+        <div className="mt-auto mb-10 text-center opacity-30 space-y-1">
+           <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.3em] italic">App Version: {APP_VERSION}</p>
+           <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest italic">Build: {BUILD_VERSION}</p>
         </div>
       </div>
     </PageWrapper>

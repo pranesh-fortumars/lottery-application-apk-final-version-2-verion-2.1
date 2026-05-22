@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { subscribeToUsers, subscribeToResults, subscribeToTickets } from '../../services/firebaseService';
 import PullToRefresh from '../../components/PullToRefresh';
+import { APP_VERSION, BUILD_VERSION } from '../../config';
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState([
@@ -225,6 +226,15 @@ const AdminDashboard = () => {
                 </div>
               ))}
            </div>
+        </div>
+
+        <div className="pt-8 pb-4 text-center opacity-30 space-y-1 border-t border-gray-200 mt-8">
+           <p className="text-[9px] font-black text-gray-500 uppercase tracking-[0.2em]">
+              Admin Core System: {APP_VERSION}
+           </p>
+           <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest italic">
+              Build: {BUILD_VERSION}
+           </p>
         </div>
       </div>
       </div>
