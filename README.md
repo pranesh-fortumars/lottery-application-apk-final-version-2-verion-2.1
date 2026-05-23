@@ -12,9 +12,10 @@ An enterprise-grade, high-fidelity lottery management and play platform built fo
 - **Automated Payout Engine**: Real-time winner detection and instant balance credit using atomic database transactions.
 - **Mandatory Payout Verification**: Secure onboarding workflow requiring verified banking details (Account Holder Name, Account Number, IFSC Code, UPI ID) before ticket purchases or withdrawal requests are permitted.
 - **High-Fidelity Ledger & History**: Professional, receipt-style ticket history and a dedicated **Transaction History** hub with live status tracking (Pending, Approved, Rejected, Won, Active).
-- **Mobile-Optimized UX**: Platform-wide implementation of native mobile numeric keypads (`inputMode="numeric"`, `inputMode="decimal"`, `pattern="[0-9]*"`) for all amount, phone number, and ticket entry fields, preventing input errors on iOS and Android devices.
-- **Flexible Multi-ID Login**: Unified authentication field allowing users to securely log in using their registered Username, Mobile Number, or Email Address.
+- **Mobile-Optimized UX**: Platform-wide implementation of native mobile numeric keypads (`inputMode="numeric"`, `inputMode="decimal"`, `pattern="[0-9]*"`) for all amount, phone number, and ticket entry fields. Features ultra-compact, scroll-free responsive modal designs for optimal single-screen mobile interactions.
+- **Flexible Multi-ID Login**: Unified authentication field allowing users to securely log in using their registered Username, Mobile Number, or Email Address with case-insensitive robust matching.
 - **Referral Engine**: Integrated referral system rewarding users with instant bonus chips upon successful friend registration.
+- **Pull-To-Refresh Reactivity**: Custom-built mobile touch gesture system for instant, on-demand data synchronization without requiring page reloads.
 
 ### 🛡️ For Administrators
 - **Unified Financial Command Center**: Real-time management boards for deposit approvals and withdrawal requests, featuring tabbed interfaces separating **Pending Verification** from **Permanent Audit History**.
@@ -22,7 +23,8 @@ An enterprise-grade, high-fidelity lottery management and play platform built fo
 - **Time-Locked Announcements & Market Control**: Secure result declaration engine with built-in validation for market-specific slots, including automated **Kerala Lottery Early Closure (02:00 PM)** rules and a master switch for global ticket sales.
 - **Live Intake Monitor & High-Frequency Analytics**: Real-time analysis of number frequency mapping and combination volume tracking across active draw sessions. Features top-15 high-frequency combination rankings, board-specific filtering (A, B, C, AB, BC, AC), and price-tier breakdowns (e.g., ₹12, ₹28, ₹30, ₹55, ₹60 for 3D; ₹20, ₹50, ₹100 for 4D).
 - **Official PDF Export**: Built-in automated PDF generation (`jspdf`, `jspdf-autotable`) producing official lottery audit and result reports with professional formatting.
-- **Deep-Dive User Management**: Detailed player profiles allowing administrators to monitor individual liquidity, adjust triple-balance allocations, update security parameters, and review full transaction histories.
+- **Deep-Dive User Management & Metadata**: Detailed player profiles allowing administrators to monitor individual liquidity, adjust triple-balance allocations, update security parameters, review transaction histories, and track exact Account Registration timestamps (with automated legacy user migration mapping).
+- **Version & Build Transparency**: Global `APP_VERSION` and `BUILD_VERSION` config constants displayed seamlessly across user profile settings and admin dashboards for clear deployment tracking.
 
 ---
 
@@ -52,8 +54,10 @@ graph TD
 
 - **Catch-Up Audit Engine**: A resilient automated auditing system that ensures winning tickets are accurately processed and credited even if a user logs in days after a result is declared.
 - **Standardized Market Cutoff Logic**: Precise draw schedules (DEAR at 01:00 PM, 06:00 PM, 08:00 PM; KERALA at 03:00 PM) enforced with automated 5-minute pre-draw cutoff buffers (`getCutoffTime`) and dynamic administrative overrides.
+- **Secure Withdrawal Escrow Protocol**: Implements an instant escrow deduction methodology. When a user requests a withdrawal, funds are instantly secured/deducted to prevent double-spending vulnerabilities or negative balances. If an admin rejects the request, an automated live refund is instantly credited back to the user's active wallet.
 - **Fuzzy Sync & Data Normalization**: Built-in whitespace trimming, case normalization, and strict data-type parsing to guarantee flawless synchronization between administrative data entry and client-side evaluation.
 - **Atomic Reliability**: Utilizes Firestore `increment`, `updateDoc`, and `writeBatch` to ensure zero race conditions or financial discrepancies during multi-ticket purchases and balance adjustments.
+- **Live Ecosystem Subscriptions**: Built on top of Firestore `onSnapshot` listeners to immediately push data across the platform, eliminating stale data in admin and user interfaces.
 
 ---
 
