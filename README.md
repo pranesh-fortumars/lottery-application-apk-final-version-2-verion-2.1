@@ -83,10 +83,29 @@ graph TD
    ```bash
    npm run dev
    ```
-5. Production Build:
+5. Production Web Build:
    ```bash
    npm run build
    ```
+
+### 📱 Android APK Build (Capacitor)
+This project uses Ionic Capacitor to compile the web application into a native Android APK.
+
+1. Ensure your production build is fresh:
+   ```bash
+   npm run build
+   ```
+2. Sync the web assets to the Android project:
+   ```bash
+   npx cap sync android
+   ```
+3. Open Android Studio to build the APK, or run it directly on a connected device:
+   ```bash
+   npx cap open android
+   # OR
+   npx cap run android
+   ```
+*Note: To update the app version, bump the version code in `android/app/build.gradle` and the `APP_VERSION` in `src/config.js` before syncing.*
 
 ---
 
