@@ -727,8 +727,7 @@ const AdminAnnouncements = () => {
                                  const boardData = dynamicAnalyticFeed[showDetailSlot]?.dataStore?.[monitorType]?.[monitorBoard] || {};
                                  const sortedCombos = Object.entries(boardData)
                                    .filter(([_, count]) => count > 0)
-                                   .sort((a, b) => b[1] - a[1])
-                                   .slice(0, 15); // Top 15
+                                   .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])); // Full descending list with consistent secondary sort
 
                                  if (sortedCombos.length === 0) {
                                    return (
