@@ -155,28 +155,6 @@ const ProfilePage = () => {
             </div>
           )}
 
-          {/* Mandatory Profile Completion Warning Banner */}
-          {!isAdmin && !Boolean(user?.accountHolderName && user?.accountNumber && user?.ifscCode && user?.upiId) && (
-            <div className="mx-6 mt-6 bg-amber-50 border-2 border-amber-200 rounded-[2.5rem] p-6 shadow-lg flex flex-col gap-4 animate-pulse">
-               <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-amber-500 text-white rounded-2xl flex items-center justify-center shrink-0 shadow-md">
-                     <AlertCircle size={24} />
-                  </div>
-                  <div>
-                     <h3 className="text-sm font-black text-amber-900 uppercase tracking-tight italic font-condensed">Action Required: Mandatory Profile Completion</h3>
-                     <p className="text-[10px] text-amber-800 font-bold mt-0.5 leading-relaxed">
-                        You must verify your banking & UPI payout credentials before purchasing tickets or requesting withdrawals.
-                     </p>
-                  </div>
-               </div>
-               <button 
-                 onClick={() => navigate('/settings/personal-info')}
-                 className="w-full bg-amber-500 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2"
-               >
-                  Complete Verification Details <ChevronRight size={16} />
-               </button>
-            </div>
-          )}
 
           {/* Payout & Banking Info Card */}
           {!isAdmin && (
@@ -324,6 +302,29 @@ const ProfilePage = () => {
             </div>
             <ChevronRight size={20} className="text-white/20" />
           </div>
+
+          {/* Mandatory Profile Completion Warning Banner */}
+          {!isAdmin && !Boolean(user?.accountHolderName && user?.accountNumber && user?.ifscCode && user?.upiId) && (
+            <div className="mt-8 bg-amber-50 border-2 border-amber-200 rounded-[2.5rem] p-6 shadow-lg flex flex-col gap-4 animate-pulse">
+               <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-amber-500 text-white rounded-2xl flex items-center justify-center shrink-0 shadow-md">
+                     <AlertCircle size={24} />
+                  </div>
+                  <div>
+                     <h3 className="text-sm font-black text-amber-900 uppercase tracking-tight italic font-condensed">Action Required: Mandatory Profile Completion</h3>
+                     <p className="text-[10px] text-amber-800 font-bold mt-0.5 leading-relaxed">
+                        You must verify your banking & UPI payout credentials before purchasing tickets or requesting withdrawals.
+                     </p>
+                  </div>
+               </div>
+               <button 
+                 onClick={() => navigate('/settings/personal-info')}
+                 className="w-full bg-amber-500 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2"
+               >
+                  Complete Verification Details <ChevronRight size={16} />
+               </button>
+            </div>
+          )}
         </div>
 
         {!isAdmin && <SupportSection />}
