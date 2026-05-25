@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import PageWrapper from '../components/PageWrapper';
+import PageWrapper, { SupportSection } from '../components/PageWrapper';
 import { Phone, Lock, ChevronLeft, AlertCircle, CheckCircle2, ShieldCheck, ArrowRight, Save, Key, Mail, Send } from 'lucide-react';
 import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../firebase';
