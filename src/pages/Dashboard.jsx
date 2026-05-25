@@ -57,10 +57,10 @@ const Dashboard = () => {
     const marketName = game.brand;
     const isKerala = marketName.toUpperCase() === 'KERALA';
     const globalLock = appSettings.globalSalesClosed;
-    const forceClosed = isKerala && appSettings.keralaSalesClosed;
+    const earlyClosure = isKerala && appSettings.keralaSalesClosed;
     
     // If Kerala early closure is ON, force time to 02:00 PM for logic and display
-    const effectiveTime = (isKerala && forceClosed) ? '02:00 PM' : game.time;
+    const effectiveTime = earlyClosure ? '02:00 PM' : game.time;
     
     return {
       time: effectiveTime,
@@ -68,7 +68,7 @@ const Dashboard = () => {
       name: marketName,
       type: marketName.toLowerCase(),
       id: game.id,
-      closed: globalLock || forceClosed || isSlotClosed(effectiveTime, marketName, appSettings)
+      closed: globalLock || isSlotClosed(effectiveTime, marketName, appSettings)
     };
   });
 
