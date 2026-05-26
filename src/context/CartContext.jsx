@@ -72,27 +72,35 @@ export const CartProvider = ({ children }) => {
 
     // Subscribe to Global Prize Scheme
     const unsubscribeScheme = onSnapshot(doc(db, 'settings', 'prizeScheme'), (snapshot) => {
-      if (snapshot.exists()) {
-        setPrizeScheme(snapshot.data());
+      const data = snapshot.exists() ? snapshot.data() : null;
+      if (data && data.v2) {
+        setPrizeScheme(data);
       } else {
-        // Initialize default scheme if missing
-        const defaultScheme = {
-          '1D': { A: '100', B: '100', C: '100' },
-          '2D': { AB: '1000', BC: '1000', AC: '1000' },
-          '3D': {
-            '12': { ABC: '6250', BC: '250', C: '25' },
-            '28': { ABC: '15000', BC: '500', C: '50' },
-            '30': { ABC: '17500', BC: '500', C: '50' },
-            '55': { ABC: '30000', BC: '1000', C: '100' },
-            '60': { ABC: '35000', BC: '1000', C: '100' }
-          },
-          '4D': {
-            '20': { XABC: '100000', ABC: '0', BC: '0', C: '0' },
-            '50': { XABC: '250000', ABC: '5000', BC: '500', C: '50' },
-            '100': { XABC: '500000', ABC: '10000', BC: '1000', C: '100' }
-          }
+        // Initialize or Migrate to v2 scheme
+        const baseScheme = {
+          '1D': { price: '11.00', A: '100', B: '100', C: '100' },
+          '2D': { price: '11.00', AB: '1000', BC: '1000', AC: '1000' },
+          '3D': [
+            { id: 'tier_12', price: '12.00', ABC: '6250', BC: '250', C: '25', active: true },
+            { id: 'tier_28', price: '28.00', ABC: '15000', BC: '500', C: '50', active: true },
+            { id: 'tier_30', price: '30.00', ABC: '17500', BC: '500', C: '50', active: true },
+            { id: 'tier_55', price: '55.00', ABC: '30000', BC: '1000', C: '100', active: true },
+            { id: 'tier_60', price: '60.00', ABC: '35000', BC: '1000', C: '100', active: true }
+          ],
+          '4D': [
+            { id: 'tier_20', price: '20.00', XABC: '100000', ABC: '0', BC: '0', C: '0', active: true },
+            { id: 'tier_50', price: '50.00', XABC: '250000', ABC: '5000', BC: '500', C: '50', active: true },
+            { id: 'tier_100', price: '100.00', XABC: '500000', ABC: '10000', BC: '1000', C: '100', active: true }
+          ]
         };
-        setPrizeScheme(defaultScheme);
+
+        const defaultSchemeV2 = {
+          v2: true,
+          DEAR: JSON.parse(JSON.stringify(baseScheme)),
+          KERALA: JSON.parse(JSON.stringify(baseScheme))
+        };
+        
+        setPrizeScheme(defaultSchemeV2);
       }
     });
 
@@ -308,7 +316,14 @@ export const CartProvider = ({ children }) => {
 
             if (ticket.type === '4D') {
               // 4D Tiered Cascading Logic: XABC -> ABC -> BC -> C
-              const tierPrizes = res.prizes?.['4D']?.[ticketPriceKey] || {};
+              let tierPrizes = {};
+              if (res.prizes?.v2) {
+                const brandScheme = res.prizes[res.brand] || res.prizes['DEAR'];
+                tierPrizes = brandScheme?.['4D']?.find(t => Number(t.price) === Number(ticket.price)) || {};
+              } else {
+                tierPrizes = res.prizes?.['4D']?.[ticketPriceKey] || {};
+              }
+
               if (ticketNum === winningCombos['4D_XABC']) {
                 isWinner = true;
                 winAmt = Number(tierPrizes.XABC || 0);
@@ -324,7 +339,14 @@ export const CartProvider = ({ children }) => {
               }
             } else if (ticket.type === '3D') {
               // 3D Tiered Cascading Logic: ABC -> BC -> C
-              const tierPrizes = res.prizes?.['3D']?.[ticketPriceKey] || {};
+              let tierPrizes = {};
+              if (res.prizes?.v2) {
+                const brandScheme = res.prizes[res.brand] || res.prizes['DEAR'];
+                tierPrizes = brandScheme?.['3D']?.find(t => Number(t.price) === Number(ticket.price)) || {};
+              } else {
+                tierPrizes = res.prizes?.['3D']?.[ticketPriceKey] || {};
+              }
+
               if (ticketNum === winningCombos['3D_ABC']) {
                 isWinner = true;
                 winAmt = Number(tierPrizes.ABC || 0);
@@ -341,7 +363,12 @@ export const CartProvider = ({ children }) => {
               const targetNum = String(winningCombos[lookupKey] || '');
               isWinner = ticketNum === targetNum;
               if (isWinner) {
-                winAmt = Number(res.prizes?.[ticket.type]?.[ticket.pos] || 0);
+                if (res.prizes?.v2) {
+                  const brandScheme = res.prizes[res.brand] || res.prizes['DEAR'];
+                  winAmt = Number(brandScheme?.[ticket.type]?.[ticket.pos] || 0);
+                } else {
+                  winAmt = Number(res.prizes?.[ticket.type]?.[ticket.pos] || 0);
+                }
               }
             }
             

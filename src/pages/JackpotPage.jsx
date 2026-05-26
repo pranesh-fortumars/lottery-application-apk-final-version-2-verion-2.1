@@ -8,7 +8,7 @@ import { isSlotClosed } from '../constants/lotteryConfig';
 
 const JackpotPage = () => {
   const navigate = useNavigate();
-  const { cart, appSettings, loading: cartLoading } = useCart();
+  const { cart, appSettings, loading: cartLoading, prizeScheme } = useCart();
   const jackpotVisible = appSettings.jackpotVisible;
 
   React.useEffect(() => {
@@ -37,13 +37,23 @@ const JackpotPage = () => {
   const firstActiveSlot = slots.find(s => s.status === 'active')?.time || slots[slots.length - 1].time;
   const [activeSlot, setActiveSlot] = useState(firstActiveSlot);
 
-  const abcTiers = [
+  const currentBrandScheme = prizeScheme?.v2 ? prizeScheme['DEAR'] : null;
+
+  const abcTiers = currentBrandScheme ? currentBrandScheme['3D'].filter(t => t.active).map(t => ({
+    price: t.price, win: `₹ ${t.ABC}, ${t.BC}, ${t.C}`
+  })) : [
     { price: "12.00", win: "₹ 6250, 250, 25" },
     { price: "28.00", win: "₹ 15000, 500, 50" },
     { price: "30.00", win: "₹ 17500, 500, 50" },
     { price: "55.00", win: "₹ 30000, 1000, 100" },
     { price: "60.00", win: "₹ 35000, 1000, 100" },
   ];
+
+  const d1Price = currentBrandScheme ? currentBrandScheme['1D'].price : "11.00";
+  const d1Win = currentBrandScheme ? `Win ₹ ${currentBrandScheme['1D'].A}` : "Win ₹ 100";
+
+  const d2Price = currentBrandScheme ? currentBrandScheme['2D'].price : "11.00";
+  const d2Win = currentBrandScheme ? `Win ₹ ${currentBrandScheme['2D'].AB}` : "Win ₹ 1000";
 
   const jackpotFooter = (
     <button 
@@ -100,8 +110,8 @@ const JackpotPage = () => {
             ))}
           </div>
 
-          <BettingCard title="Single Digit" winText="Win ₹ 100" price="11.00" digits={1} gameName="Jackpot" drawTime={activeSlot} />
-          <BettingCard title="Two Digits" winText="Win ₹ 1000" price="11.00" digits={2} gameName="Jackpot" drawTime={activeSlot} />
+          <BettingCard title="Single Digit" winText={d1Win} price={d1Price} digits={1} gameName="Jackpot" drawTime={activeSlot} />
+          <BettingCard title="Two Digits" winText={d2Win} price={d2Price} digits={2} gameName="Jackpot" drawTime={activeSlot} />
           <BettingCard 
             title="Three Digits" 
             digits={3} 

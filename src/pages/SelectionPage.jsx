@@ -9,7 +9,7 @@ import { getSlotById, isSlotClosed } from '../constants/lotteryConfig';
 const SelectionPage = () => {
   const navigate = useNavigate();
   const { gameId } = useParams();
-  const { cart, appSettings } = useCart();
+  const { cart, appSettings, prizeScheme } = useCart();
   
   const slotData = getSlotById(gameId);
   const marketName = slotData?.brand || 'DEAR';
@@ -25,7 +25,11 @@ const SelectionPage = () => {
   // Let the time-based cutoff handle kerala early closure dynamically
   const closed = globalLock || isSlotClosed(drawTime, marketName, appSettings);
 
-  const abcTiers = [
+  const currentBrandScheme = prizeScheme?.v2 ? prizeScheme[marketName.toUpperCase()] || prizeScheme['DEAR'] : null;
+
+  const abcTiers = currentBrandScheme ? currentBrandScheme['3D'].filter(t => t.active).map(t => ({
+    price: t.price, win: `₹ ${t.ABC}, ${t.BC}, ${t.C}`
+  })) : [
     { price: "12.00", win: "₹ 6250, 250, 25" },
     { price: "28.00", win: "₹ 15000, 500, 50" },
     { price: "30.00", win: "₹ 17500, 500, 50" },
@@ -33,11 +37,19 @@ const SelectionPage = () => {
     { price: "60.00", win: "₹ 35000, 1000, 100" },
   ];
 
-  const xabcTiers = [
+  const xabcTiers = currentBrandScheme ? currentBrandScheme['4D'].filter(t => t.active).map(t => ({
+    price: t.price, win: `₹ ${t.XABC}, ${t.ABC}, ${t.BC}, ${t.C}`
+  })) : [
     { price: "20.00", win: "₹ 100000" },
     { price: "50.00", win: "₹ 250000, 5000, 500, 50" },
     { price: "100.00", win: "₹ 500000, 10000, 1000, 100" },
   ];
+
+  const d1Price = currentBrandScheme ? currentBrandScheme['1D'].price : "11.00";
+  const d1Win = currentBrandScheme ? `₹ ${currentBrandScheme['1D'].A}` : "₹ 100";
+
+  const d2Price = currentBrandScheme ? currentBrandScheme['2D'].price : "11.00";
+  const d2Win = currentBrandScheme ? `₹ ${currentBrandScheme['2D'].AB}` : "₹ 1000";
 
   // --- Persistent Footer Action ---
   const footerBtn = (
@@ -88,8 +100,8 @@ const SelectionPage = () => {
             {/* Single Digit Matrix */}
             <BettingCard 
                 title="Single Digit" 
-                winText="₹ 100" 
-                price="11.00" 
+                winText={d1Win} 
+                price={d1Price} 
                 gameName={getGameName()} 
                 drawTime={drawTime}
                 customRows={[
@@ -102,8 +114,8 @@ const SelectionPage = () => {
             {/* Double Digit Combinations */}
             <BettingCard 
                 title="Double Digits" 
-                winText="₹ 1000" 
-                price="11.00" 
+                winText={d2Win} 
+                price={d2Price} 
                 gameName={getGameName()} 
                 drawTime={drawTime}
                 customRows={[

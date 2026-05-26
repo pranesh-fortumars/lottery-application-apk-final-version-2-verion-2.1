@@ -33,6 +33,7 @@ import { doc, updateDoc, collection, getDocs, deleteDoc, writeBatch, query } fro
 import { db, auth } from '../../firebase';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { APP_VERSION, BUILD_VERSION } from '../../config';
+import AdminPrizeSettings from './AdminPrizeSettings';
 
 const SettingRow = ({ label, desc, children }) => (
   <div className="flex flex-col justify-between items-start py-8 gap-4 first:pt-4 last:pb-4 border-b border-gray-50 last:border-none group">
@@ -492,6 +493,7 @@ const AdminSettings = () => {
     { id: 'Profile', icon: User, label: 'My Identity' },
     { id: 'Security', icon: Key, label: 'Security & Access' },
     { id: 'Cleanse', icon: Trash2, label: 'Factory Reset' },
+    { id: 'Prize Config', icon: Database, label: 'Prize Config' },
     { id: 'Integration', icon: Globe, label: 'API & External' },
   ];
 
@@ -637,7 +639,11 @@ const AdminSettings = () => {
             <IntegrationSettings />
           )}
 
-         {activeTab !== 'Cleanse' && activeTab !== 'Profile' && activeTab !== 'Integration' && (
+          {activeTab === 'Prize Config' && (
+            <AdminPrizeSettings />
+          )}
+
+         {activeTab !== 'Cleanse' && activeTab !== 'Profile' && activeTab !== 'Integration' && activeTab !== 'Prize Config' && (
           <div className="pt-10 grid grid-cols-2 gap-4">
             <button className="py-5 bg-gray-900 text-white rounded-2xl font-black text-[12px] uppercase tracking-widest shadow-xl shadow-black/10 active:scale-95 transition-all">
                Store Global Config
