@@ -24,7 +24,9 @@ import {
   Calendar,
   Search,
   Receipt,
-  Clock
+  Clock,
+  Copy,
+  CheckCircle2
 } from 'lucide-react';
 import { getBrandBySlot } from '../../constants/lotteryConfig';
 import { useCart } from '../../context/CartContext';
@@ -52,6 +54,14 @@ const AdminUserDetails = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]);
   const [showAll, setShowAll] = useState(false);
+  const [copiedField, setCopiedField] = useState(null);
+
+  const handleCopy = (text, fieldName) => {
+    if (!text || text === 'N/A' || text === 'Not Provided' || text === 'No Mobile') return;
+    navigator.clipboard.writeText(text);
+    setCopiedField(fieldName);
+    setTimeout(() => setCopiedField(null), 2000);
+  };
 
   useEffect(() => {
     let unsubscribeUser;
@@ -344,7 +354,7 @@ const AdminUserDetails = () => {
       {activeTab === 'overview' ? (
         <>
           {/* Wallet Dashboard */}
-      <div className="bg-gray-950 rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden group">
+      <div className="bg-gray-950 rounded-[2.5rem] p-6 md:p-10 text-white shadow-2xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-6 opacity-10 bg-[#ff004d] rounded-bl-[2.5rem] group-hover:scale-110 transition-transform">
              <Wallet size={48} />
           </div>
@@ -389,54 +399,102 @@ const AdminUserDetails = () => {
        </div>
 
       {/* Credentials & Details */}
-      <div className="bg-white rounded-[2.5rem] p-10 shadow-xl border border-gray-100 space-y-8">
+      <div className="bg-white rounded-[2.5rem] p-5 md:p-10 shadow-xl border border-gray-100 space-y-8">
          <div className="flex items-center gap-3 border-b border-gray-50 pb-6">
             <ShieldCheck className="text-[#f42464]" size={22} />
             <h3 className="text-xl font-black font-condensed uppercase tracking-tighter text-gray-800 italic leading-none">Identity Check</h3>
          </div>
          
-         <div className="grid grid-cols-1 gap-6">
-            <div className="flex items-center gap-5 p-4 bg-gray-50/50 rounded-2xl border border-gray-50">
-               <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-gray-400"><Mail size={22} /></div>
-               <div>
-                  <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Electronic Mail</p>
-                  <p className="text-sm font-black text-gray-800">{user.email || 'N/A'}</p>
+         <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between p-4 bg-gray-50/50 rounded-2xl border border-gray-50 group">
+               <div className="flex items-center gap-4 overflow-hidden">
+                  <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-gray-400 shrink-0"><Mail size={20} /></div>
+                  <div className="overflow-hidden">
+                     <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Electronic Mail</p>
+                     <p className="text-[11px] font-black text-gray-800 break-words">{user.email || 'N/A'}</p>
+                  </div>
                </div>
+               <button 
+                  onClick={() => handleCopy(user.email, 'email')}
+                  className="p-2 bg-white rounded-lg border border-gray-100 shadow-sm shrink-0 ml-2 active:scale-90 transition-all"
+               >
+                  {copiedField === 'email' ? <CheckCircle2 size={16} className="text-emerald-500" /> : <Copy size={16} className="text-gray-400" />}
+               </button>
             </div>
-            <div className="flex items-center gap-5 p-4 bg-gray-50/50 rounded-2xl border border-gray-50">
-               <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-gray-400"><Phone size={22} /></div>
-               <div>
-                  <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Mobile Interface</p>
-                  <p className="text-sm font-black text-gray-800">{user.mobile || 'No Mobile'}</p>
+            <div className="flex items-center justify-between p-4 bg-gray-50/50 rounded-2xl border border-gray-50 group">
+               <div className="flex items-center gap-4 overflow-hidden">
+                  <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-gray-400 shrink-0"><Phone size={20} /></div>
+                  <div className="overflow-hidden">
+                     <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Mobile Interface</p>
+                     <p className="text-[11px] font-black text-gray-800 break-words">{user.mobile || 'No Mobile'}</p>
+                  </div>
                </div>
+               <button 
+                  onClick={() => handleCopy(user.mobile, 'mobile')}
+                  className="p-2 bg-white rounded-lg border border-gray-100 shadow-sm shrink-0 ml-2 active:scale-90 transition-all"
+               >
+                  {copiedField === 'mobile' ? <CheckCircle2 size={16} className="text-emerald-500" /> : <Copy size={16} className="text-gray-400" />}
+               </button>
             </div>
          </div>
 
          {/* Banking & Payout Credentials */}
-         <div className="bg-gray-50/30 rounded-[2rem] p-6 border border-gray-100 space-y-6">
+         <div className="bg-gray-50/30 rounded-[2rem] p-6 border border-gray-100 space-y-6 relative">
+            {/* Inline Toast Notification */}
+            <AnimatePresence>
+              {copiedField && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute -top-4 right-4 bg-gray-900 text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl shadow-xl flex items-center gap-2 z-10"
+                >
+                  <CheckCircle2 size={14} className="text-emerald-400" /> Copied Successfully
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <div className="flex items-center gap-3 border-b border-gray-100 pb-4">
                <Landmark className="text-[#f42464]" size={20} />
                <h4 className="text-sm font-black uppercase tracking-tight text-gray-800 italic font-condensed">Banking & Payout Credentials</h4>
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
-               <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-                  <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Account Holder Name</p>
-                  <p className="text-xs font-black text-gray-800 truncate">{user.accountHolderName || <span className="text-red-500 italic">Not Provided</span>}</p>
+            <div className="flex flex-col gap-4">
+               <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-start">
+                  <div className="pr-2 overflow-hidden">
+                     <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Account Holder Name</p>
+                     <p className="text-[11px] font-black text-gray-800 break-words leading-tight">{user.accountHolderName || <span className="text-red-500 italic">Not Provided</span>}</p>
+                  </div>
+                  <button onClick={() => handleCopy(user.accountHolderName, 'name')} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-lg shrink-0 transition-colors">
+                     {copiedField === 'name' ? <CheckCircle2 size={14} className="text-emerald-500" /> : <Copy size={14} className="text-gray-400" />}
+                  </button>
                </div>
-               <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-                  <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Account Number</p>
-                  <p className="text-xs font-black text-gray-800 truncate">{user.accountNumber || <span className="text-red-500 italic">Not Provided</span>}</p>
+               <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-start">
+                  <div className="pr-2 overflow-hidden">
+                     <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Account Number</p>
+                     <p className="text-[11px] font-black text-gray-800 break-words leading-tight">{user.accountNumber || <span className="text-red-500 italic">Not Provided</span>}</p>
+                  </div>
+                  <button onClick={() => handleCopy(user.accountNumber, 'acc')} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-lg shrink-0 transition-colors">
+                     {copiedField === 'acc' ? <CheckCircle2 size={14} className="text-emerald-500" /> : <Copy size={14} className="text-gray-400" />}
+                  </button>
                </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-               <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-                  <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">IFSC Code</p>
-                  <p className="text-xs font-black text-gray-800 truncate">{user.ifscCode || <span className="text-red-500 italic">Not Provided</span>}</p>
+               <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-start">
+                  <div className="pr-2 overflow-hidden">
+                     <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">IFSC Code</p>
+                     <p className="text-[11px] font-black text-gray-800 break-words leading-tight">{user.ifscCode || <span className="text-red-500 italic">Not Provided</span>}</p>
+                  </div>
+                  <button onClick={() => handleCopy(user.ifscCode, 'ifsc')} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-lg shrink-0 transition-colors">
+                     {copiedField === 'ifsc' ? <CheckCircle2 size={14} className="text-emerald-500" /> : <Copy size={14} className="text-gray-400" />}
+                  </button>
                </div>
-               <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-                  <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">UPI ID / Address</p>
-                  <p className="text-xs font-black text-gray-800 truncate">{user.upiId || <span className="text-red-500 italic">Not Provided</span>}</p>
+               <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-start">
+                  <div className="pr-2 overflow-hidden">
+                     <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">UPI ID / Address</p>
+                     <p className="text-[11px] font-black text-gray-800 break-words leading-tight">{user.upiId || <span className="text-red-500 italic">Not Provided</span>}</p>
+                  </div>
+                  <button onClick={() => handleCopy(user.upiId, 'upi')} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-lg shrink-0 transition-colors">
+                     {copiedField === 'upi' ? <CheckCircle2 size={14} className="text-emerald-500" /> : <Copy size={14} className="text-gray-400" />}
+                  </button>
                </div>
             </div>
          </div>
