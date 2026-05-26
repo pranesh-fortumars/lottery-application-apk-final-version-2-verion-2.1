@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft,
@@ -20,8 +20,14 @@ import {
   ChevronLeft,
   X,
   Key,
-  Landmark
+  Landmark,
+  Calendar,
+  Search,
+  Receipt,
+  Clock
 } from 'lucide-react';
+import { getBrandBySlot } from '../../constants/lotteryConfig';
+import { useCart } from '../../context/CartContext';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../../firebase';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -39,6 +45,13 @@ const AdminUserDetails = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editData, setEditData] = useState({ name: '', mobile: '', email: '' });
   const [updating, setUpdating] = useState(false);
+
+  // My Tickets State
+  const { declaredResults } = useCart();
+  const [allTickets, setAllTickets] = useState([]);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     let unsubscribeUser;
@@ -71,6 +84,8 @@ const AdminUserDetails = () => {
               const timeB = b.timestamp?.toMillis ? b.timestamp.toMillis() : 0;
               return timeB - timeA;
             });
+
+          setAllTickets(ticketsList);
 
           const totalWonValue = ticketsList.reduce((sum, t) => {
             if (t.status === 'Won') {
@@ -112,6 +127,61 @@ const AdminUserDetails = () => {
   const handleRefresh = async () => {
     await new Promise(r => setTimeout(r, 600));
   };
+
+  const getDeclaredResult = (date, draw) => {
+     if (!declaredResults) return '-';
+     const result = declaredResults.find(r => r.date === date && r.draw === draw);
+     return result ? result.number : '-';
+  };
+
+  const transactionGroups = useMemo(() => {
+    if (!allTickets || !Array.isArray(allTickets)) return [];
+    
+    const baseList = showAll 
+      ? [...allTickets] 
+      : allTickets.filter(t => {
+          const tDate = t.purchaseDate ? String(t.purchaseDate).trim() : '';
+          return tDate === filterDate;
+        });
+
+    const groups = {};
+    baseList.forEach(t => {
+       const pid = t.purchaseId || 'UNTRACKED';
+       if (!groups[pid]) {
+          groups[pid] = {
+             id: pid,
+             date: t.purchaseDate,
+             time: t.purchaseTime || '00:00',
+             drawSlots: {},
+             totalWin: 0,
+             brand: (t.title || 'LOTTERY').split('-')[0].trim().toUpperCase()
+          };
+       }
+       
+       const slotKey = t.draw || 'N/A';
+       if (!groups[pid].drawSlots[slotKey]) {
+          groups[pid].drawSlots[slotKey] = {
+             slot: slotKey.replace(/[\[\]]/g, ''),
+             declaredNum: getDeclaredResult(t.purchaseDate, t.draw),
+             tickets: []
+          };
+       }
+       
+       groups[pid].drawSlots[slotKey].tickets.push(t);
+       
+       if (t.status === 'Won') {
+          const winAmt = parseInt(String(t.prize || "0").replace(/[^\d]/g, '')) || 0;
+          groups[pid].totalWin += winAmt;
+       }
+    });
+
+    return Object.values(groups).sort((a, b) => {
+       if (a.date !== b.date) return new Date(b.date) - new Date(a.date);
+       return String(b.time).localeCompare(String(a.time));
+    });
+  }, [allTickets, filterDate, showAll, declaredResults]);
+
+  const resultCount = useMemo(() => transactionGroups.length, [transactionGroups]);
 
   const handleToggleBlock = async () => {
     if (!user) return;
@@ -251,7 +321,25 @@ const AdminUserDetails = () => {
          </div>
       </div>
 
-      {/* Wallet Dashboard */}
+      {/* Tab Navigation */}
+      <div className="flex bg-white p-1 rounded-2xl shadow-sm border border-gray-100 mb-6 w-full mx-auto relative z-10">
+        <button 
+          onClick={() => setActiveTab('overview')}
+          className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${activeTab === 'overview' ? 'bg-gray-900 text-white shadow-lg shadow-gray-200' : 'text-gray-400 hover:bg-gray-50'}`}
+        >
+          Profile Overview
+        </button>
+        <button 
+          onClick={() => setActiveTab('tickets')}
+          className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${activeTab === 'tickets' ? 'bg-[#ff0000] text-white shadow-lg shadow-red-200' : 'text-gray-400 hover:bg-gray-50'}`}
+        >
+          My Tickets
+        </button>
+      </div>
+
+      {activeTab === 'overview' ? (
+        <>
+          {/* Wallet Dashboard */}
       <div className="bg-gray-950 rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-6 opacity-10 bg-[#ff004d] rounded-bl-[2.5rem] group-hover:scale-110 transition-transform">
              <Wallet size={48} />
@@ -415,6 +503,151 @@ const AdminUserDetails = () => {
            Purge Profile Identity
          </button>
       </div>
+      </>
+      ) : (
+        <div className="space-y-6">
+           {/* TICKET HISTORY UI */}
+           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3 flex flex-col sm:flex-row items-center justify-between gap-3 max-w-4xl mx-auto">
+              <div className="flex items-center gap-2 bg-gray-50 p-2 px-3 rounded-xl w-full sm:max-w-[220px] transition-all focus-within:ring-2 focus-within:ring-[#ff0000]/10 border border-gray-100">
+                 <Calendar size={14} className="text-[#ff0000]" />
+                 <div className="flex flex-col w-full">
+                    <span className="text-[6px] font-black text-gray-400 uppercase tracking-widest leading-none mb-0.5">Filter Date</span>
+                    <input 
+                      type="date" 
+                      value={filterDate}
+                      onChange={(e) => {
+                        setFilterDate(e.target.value);
+                        setShowAll(false);
+                      }}
+                      className="bg-transparent border-none text-[10px] font-black uppercase outline-none p-0 text-gray-700 w-full cursor-pointer"
+                    />
+                 </div>
+              </div>
+              <div className="flex gap-2 items-center w-full sm:w-auto justify-end">
+                 <div className="hidden sm:flex flex-col items-end mr-2">
+                    <p className="text-[7px] font-black text-gray-300 uppercase tracking-widest leading-none italic">Results Found</p>
+                    <p className="text-[14px] font-black font-condensed italic text-[#ff0000] leading-none">{resultCount}</p>
+                 </div>
+                 <button 
+                  onClick={() => setShowAll(!showAll)}
+                  className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${showAll ? 'bg-gray-900 text-white shadow-lg shadow-gray-200' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}`}
+                 >
+                    {showAll ? 'SHOW ALL' : 'HISTORY'}
+                 </button>
+              </div>
+           </div>
+
+           {transactionGroups.length === 0 ? (
+             <div className="flex flex-col items-center justify-center py-24 text-center space-y-6 bg-white rounded-[2.5rem] shadow-sm border border-gray-100">
+                <div className="relative">
+                   <Receipt size={64} className="text-gray-100" />
+                   <Search size={24} className="absolute -bottom-2 -right-2 text-gray-200" />
+                </div>
+                <div className="space-y-1">
+                   <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-300 italic">No matches for {showAll ? 'all history' : filterDate}</p>
+                   <button onClick={() => setShowAll(true)} className="text-[8px] font-black text-[#ff0000] uppercase tracking-widest underline decoration-2 underline-offset-4">View All Records</button>
+                </div>
+             </div>
+           ) : (
+             <div className="space-y-8 max-w-4xl mx-auto">
+               <div className="sm:hidden px-4 flex justify-between items-center opacity-50">
+                  <p className="text-[8px] font-black uppercase tracking-widest text-gray-400">Filtering: {showAll ? 'Full History' : filterDate}</p>
+                  <p className="text-[8px] font-black uppercase tracking-widest text-gray-400">Records: {resultCount}</p>
+               </div>
+               
+               {transactionGroups.map((group) => (
+                  <div key={group.id} className="bg-white rounded-3xl shadow-xl border-2 border-[#ff0000]/10 overflow-hidden">
+                     <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                        <div>
+                           <p className="text-[8px] font-black text-[#ff0000] uppercase tracking-[0.3em] italic">Transaction Instance</p>
+                           <h4 className="text-[12px] font-black font-condensed italic text-gray-900">ID: {group.id}</h4>
+                        </div>
+                        <div className="text-right">
+                           <p className="text-[11px] font-black font-condensed text-gray-950 italic">{group.date} | {group.time}</p>
+                        </div>
+                     </div>
+
+                     {Object.values(group.drawSlots).map((slotGroup, sIdx) => (
+                        <div key={sIdx} className="border-b-2 border-red-50 last:border-b-0">
+                           <div className="bg-white p-3 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-gray-100">
+                              <div className="flex items-center gap-3">
+                                 <div className="w-9 h-9 bg-gray-900 rounded-xl flex items-center justify-center text-white shadow-md">
+                                    <Clock size={16} className="text-amber-400" />
+                                 </div>
+                                 <div>
+                                    <h3 className="text-sm font-black font-condensed italic uppercase text-gray-950 leading-none">
+                                       {getBrandBySlot(slotGroup.slot)} LOTTERY <span className="mx-1 text-gray-300">|</span> {slotGroup.slot}
+                                    </h3>
+                                 </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                 <p className="text-[7px] font-black text-gray-400 uppercase tracking-widest italic">Result:</p>
+                                 <div className="flex gap-1">
+                                    {slotGroup.declaredNum.split('').map((n, ni) => (
+                                       <div key={ni} className="w-7 h-9 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center text-gray-950 font-black text-sm font-condensed italic">
+                                          {n}
+                                       </div>
+                                    ))}
+                                    {slotGroup.declaredNum === '-' && <span className="text-[8px] font-black text-gray-300 italic">PENDING</span>}
+                                 </div>
+                              </div>
+                           </div>
+
+                           <div className="overflow-x-auto scrollbar-hide">
+                              <table className="w-full text-center border-collapse table-fixed min-w-[320px]">
+                                 <thead>
+                                    <tr className="bg-gray-50/30 border-y border-gray-100">
+                                       <th className="w-[10%] py-1.5 border-r border-gray-100 text-[7px] font-black uppercase text-gray-500 font-condensed italic">TYP</th>
+                                       <th className="w-[14%] py-1.5 border-r border-gray-100 text-[7px] font-black uppercase text-gray-500 font-condensed italic">BRD</th>
+                                       <th className="w-[30%] py-1.5 border-r border-gray-100 text-[7px] font-black uppercase text-gray-500 font-condensed italic">NUMBER</th>
+                                       <th className="w-[8%] py-1.5 border-r border-gray-100 text-[7px] font-black uppercase text-gray-500 font-condensed italic">Q</th>
+                                       <th className="w-[15%] py-1.5 border-r border-gray-100 text-[7px] font-black uppercase text-gray-500 font-condensed italic">TIER</th>
+                                       <th className="w-[23%] py-1.5 text-[7px] font-black uppercase text-gray-500 font-condensed italic">PRIZE</th>
+                                    </tr>
+                                 </thead>
+                                 <tbody>
+                                    {slotGroup.tickets.map((t, tIdx) => {
+                                       const isWin = t.status === 'Won';
+                                       return (
+                                          <tr key={tIdx} className={`group ${isWin ? 'bg-emerald-50/30' : 'border-b border-gray-50'}`}>
+                                             <td className="py-1.5 px-0 border-r border-gray-50 text-[8px] font-black text-gray-600 uppercase italic tracking-tighter leading-none text-center">
+                                                {t.type}
+                                             </td>
+                                             <td className="py-1.5 px-0 border-r border-gray-50 text-[11px] font-black font-condensed italic text-gray-600 leading-none text-center">
+                                                {t.pos}
+                                             </td>
+                                             <td className="py-1.5 px-0 border-r border-gray-50 text-base font-black font-condensed italic text-gray-950 tracking-normal leading-none text-center">
+                                                {t.num}
+                                             </td>
+                                             <td className="py-1.5 px-0 border-r border-gray-50 text-[11px] font-black font-condensed italic text-[#ff0000] leading-none text-center">
+                                                {t.qty}
+                                             </td>
+                                             <td className="py-1.5 px-0 border-r border-gray-50 text-[7px] font-bold text-gray-400 italic leading-none text-center">
+                                                {t.price}
+                                             </td>
+                                             <td className="py-1.5 px-0.5 text-right align-middle">
+                                                <div className="flex flex-col items-end justify-center leading-none">
+                                                   {isWin ? (
+                                                      <p className="text-[11px] font-black text-emerald-600 font-condensed italic">₹{String(t.prize || "0").replace(/[^\d]/g, '')}</p>
+                                                   ) : (
+                                                      <span className="text-[6px] font-black text-gray-400 uppercase tracking-widest italic">{t.status || 'Active'}</span>
+                                                   )}
+                                                </div>
+                                             </td>
+                                          </tr>
+                                       );
+                                    })}
+                                 </tbody>
+                              </table>
+                           </div>
+                        </div>
+                     ))}
+                  </div>
+               ))}
+             </div>
+           )}
+        </div>
+      )}
       
       {/* Edit Profile Modal */}
       <AnimatePresence>
