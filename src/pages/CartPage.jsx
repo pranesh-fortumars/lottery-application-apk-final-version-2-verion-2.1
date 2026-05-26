@@ -205,9 +205,8 @@ const CartPage = () => {
         <div className="w-full max-w-sm mb-8 overflow-hidden px-1">
           <table className="w-full border-collapse border border-red-600 text-left text-sm font-serif">
             <tbody>
-              {/* Row 1: Name and Date */}
               <tr className="border border-red-600">
-                <td colSpan={3} className="p-2 border-r border-red-600 font-bold">Name: {user?.name || 'Guest'}</td>
+                <td colSpan={4} className="p-2 border-r border-red-600 font-bold">Name: {user?.name || 'Guest'}</td>
                 <td colSpan={2} className="p-2 text-right font-bold italic">Date: {currentDate}</td>
               </tr>
               
@@ -217,12 +216,13 @@ const CartPage = () => {
                 <td className="p-2 border-r border-red-600 font-bold text-center">Number</td>
                 <td className="p-2 border-r border-red-600 font-bold text-center">Unit</td>
                 <td className="p-2 border-r border-red-600 font-bold text-center">₹</td>
-                <td className="p-2 font-bold text-right">Amount ₹</td>
+                <td className="p-2 border-r border-red-600 font-bold text-right">Amount ₹</td>
+                <td className="p-2 font-bold text-center w-8"></td>
               </tr>
 
               {/* Data Rows */}
               {cart.map((item) => (
-                <tr key={item.id} className="border border-red-600">
+                <tr key={item.id} className="border border-red-600 relative group">
                   <td className="p-2 border-r border-red-600">
                     <div className="flex flex-col">
                       <span className="font-bold text-[10px] leading-tight uppercase">{item.title}</span>
@@ -232,20 +232,30 @@ const CartPage = () => {
                   <td className="p-2 border-r border-red-600 text-center font-black">{item.num}</td>
                   <td className="p-2 border-r border-red-600 text-center">{item.qty}</td>
                   <td className="p-2 border-r border-red-600 text-center">{item.price}</td>
-                  <td className="p-2 text-right font-black">{(item.price * item.qty).toFixed(2)}</td>
+                  <td className="p-2 border-r border-red-600 text-right font-black">{(item.price * item.qty).toFixed(2)}</td>
+                  <td className="p-1 text-center align-middle">
+                    <button 
+                      onClick={() => removeFromCart(item.id)} 
+                      className="p-1.5 text-red-500 hover:text-white hover:bg-red-600 rounded-lg transition-colors mx-auto flex items-center justify-center active:scale-90"
+                      title="Remove Ticket"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </td>
                 </tr>
               ))}
 
               {cart.length === 0 && (
                 <tr className="border border-red-600">
-                  <td colSpan={5} className="p-10 text-center text-gray-300 italic">No tickets in cart</td>
+                  <td colSpan={6} className="p-10 text-center text-gray-300 italic">No tickets in cart</td>
                 </tr>
               )}
 
               {/* Total Amount Row */}
               <tr className="border border-red-600 bg-gray-50 font-black">
                 <td colSpan={4} className="p-2 border-r border-red-600 text-center uppercase tracking-widest text-[10px]">Grand Total:</td>
-                <td className="p-2 text-right text-lg">{cartTotal.toFixed(2)}</td>
+                <td className="p-2 border-r border-red-600 text-right text-lg">{cartTotal.toFixed(2)}</td>
+                <td className="p-2 bg-white"></td>
               </tr>
             </tbody>
           </table>
