@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, writeBatch, doc, increment, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 import PageWrapper, { SupportSection } from '../components/PageWrapper';
-import { Wallet, ArrowUpRight, ArrowDownLeft, Clock, CheckCircle2, XCircle, RefreshCw, Filter, Search } from 'lucide-react';
+import { Wallet, ArrowUpRight, ArrowDownLeft, Clock, CheckCircle2, XCircle, RefreshCw, Filter, Search, Ban } from 'lucide-react';
 
 const UserTransactions = () => {
   const { user } = useAuth();
@@ -68,6 +68,39 @@ const UserTransactions = () => {
     return true;
   });
 
+  const handleCancelWithdrawal = async (item) => {
+    if (item.category !== 'withdrawal' || item.status !== 'pending') return;
+    
+    if (!window.confirm("Are you sure you want to cancel this withdrawal request? The deducted amount will be immediately refunded to your winning balance.")) {
+      return;
+    }
+
+    try {
+      const batch = writeBatch(db);
+      
+      // 1. Update withdrawal status
+      const withdrawalRef = doc(db, 'withdrawals', item.id);
+      batch.update(withdrawalRef, {
+        status: 'cancelled',
+        cancelledAt: serverTimestamp(),
+        cancelledBy: 'user'
+      });
+      
+      // 2. Refund user wallet
+      const userRef = doc(db, 'users', user.uid);
+      batch.update(userRef, {
+        winningBalance: increment(item.amount),
+        balance: increment(item.amount)
+      });
+      
+      await batch.commit();
+      alert("Withdrawal request cancelled successfully! Your winning balance has been restored.");
+    } catch (error) {
+      console.error("Error cancelling withdrawal:", error);
+      alert("Failed to cancel withdrawal. Please try again.");
+    }
+  };
+
   const getStatusBadge = (status) => {
     switch (status) {
       case 'approved':
@@ -82,6 +115,12 @@ const UserTransactions = () => {
         return (
           <span className="flex items-center gap-1 bg-red-50 text-red-600 border border-red-200 px-2.5 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-sm">
             <XCircle size={12} /> Rejected
+          </span>
+        );
+      case 'cancelled':
+        return (
+          <span className="flex items-center gap-1 bg-gray-100 text-gray-500 border border-gray-200 px-2.5 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-sm">
+            <Ban size={12} /> Cancelled by User
           </span>
         );
       default:
@@ -244,6 +283,16 @@ const UserTransactions = () => {
                       <span className="font-black text-gray-400 uppercase tracking-widest">Record ID</span>
                       <span className="font-bold text-gray-400">{item.id.slice(0, 10)}</span>
                     </div>
+                    {item.category === 'withdrawal' && item.status === 'pending' && (
+                      <div className="pt-2">
+                        <button 
+                          onClick={() => handleCancelWithdrawal(item)}
+                          className="w-full bg-white border-2 border-red-100 text-red-500 hover:bg-red-50 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2"
+                        >
+                          <Ban size={14} /> Cancel Request
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
