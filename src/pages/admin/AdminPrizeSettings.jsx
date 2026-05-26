@@ -111,13 +111,13 @@ const AdminPrizeSettings = () => {
   };
 
   const InputField = ({ label, value, onChange }) => (
-    <div>
-      <label className="text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">{label}</label>
+    <div className="flex flex-col h-full justify-end">
+      <label className="text-[10px] font-black uppercase tracking-wider text-gray-600 mb-2 leading-tight text-center">{label}</label>
       <input
         type="text"
         value={value || ''}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full mt-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 font-bold text-gray-800 text-sm outline-none focus:bg-white focus:border-[#ff004d]/50 transition-all shadow-inner"
+        className="w-full min-w-0 bg-gray-50 border border-gray-200 rounded-xl px-2 py-2.5 font-black text-gray-900 text-sm outline-none focus:bg-white focus:border-[#ff004d] transition-all shadow-inner text-center"
       />
     </div>
   );
@@ -152,7 +152,7 @@ const AdminPrizeSettings = () => {
       {/* 1D CONFIG */}
       <div className="bg-gray-50/50 p-6 rounded-3xl border border-gray-100 shadow-sm">
          <h4 className="text-lg font-black italic tracking-tighter mb-4 flex items-center gap-2"><Edit3 size={18} className="text-gray-400" /> 1D Lottery Base Configuration</h4>
-         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+         <div className="grid grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4">
             <InputField label="Ticket Price (₹)" value={currentBrandConfig['1D'].price} onChange={(v) => handle1D2DChange('1D', 'price', v)} />
             <InputField label="'A' Board Payout" value={currentBrandConfig['1D'].A} onChange={(v) => handle1D2DChange('1D', 'A', v)} />
             <InputField label="'B' Board Payout" value={currentBrandConfig['1D'].B} onChange={(v) => handle1D2DChange('1D', 'B', v)} />
@@ -163,7 +163,7 @@ const AdminPrizeSettings = () => {
       {/* 2D CONFIG */}
       <div className="bg-gray-50/50 p-6 rounded-3xl border border-gray-100 shadow-sm">
          <h4 className="text-lg font-black italic tracking-tighter mb-4 flex items-center gap-2"><Edit3 size={18} className="text-gray-400" /> 2D Lottery Base Configuration</h4>
-         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+         <div className="grid grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4">
             <InputField label="Ticket Price (₹)" value={currentBrandConfig['2D'].price} onChange={(v) => handle1D2DChange('2D', 'price', v)} />
             <InputField label="'AB' Match Payout" value={currentBrandConfig['2D'].AB} onChange={(v) => handle1D2DChange('2D', 'AB', v)} />
             <InputField label="'BC' Match Payout" value={currentBrandConfig['2D'].BC} onChange={(v) => handle1D2DChange('2D', 'BC', v)} />
@@ -197,7 +197,7 @@ const AdminPrizeSettings = () => {
                        </button>
                     </div>
                  </div>
-                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                 <div className="grid grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4 mt-4">
                     <InputField label="Ticket Price (₹)" value={tier.price} onChange={(v) => handleTierChange('3D', tier.id, 'price', v)} />
                     <InputField label="1st Prize (ABC)" value={tier.ABC} onChange={(v) => handleTierChange('3D', tier.id, 'ABC', v)} />
                     <InputField label="2nd Prize (BC)" value={tier.BC} onChange={(v) => handleTierChange('3D', tier.id, 'BC', v)} />
@@ -237,7 +237,7 @@ const AdminPrizeSettings = () => {
                        </button>
                     </div>
                  </div>
-                 <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                 <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mt-4">
                     <InputField label="Ticket Price (₹)" value={tier.price} onChange={(v) => handleTierChange('4D', tier.id, 'price', v)} />
                     <InputField label="1st (XABC)" value={tier.XABC} onChange={(v) => handleTierChange('4D', tier.id, 'XABC', v)} />
                     <InputField label="2nd (ABC)" value={tier.ABC} onChange={(v) => handleTierChange('4D', tier.id, 'ABC', v)} />
@@ -253,17 +253,17 @@ const AdminPrizeSettings = () => {
       </div>
 
       {/* Save Action */}
-      <div className="sticky bottom-4 z-50 mt-12 bg-white/80 backdrop-blur-md p-4 rounded-3xl border border-gray-200 shadow-2xl flex justify-between items-center">
-         <div>
-            <p className="text-xs font-black text-red-500 uppercase tracking-tight">Warning</p>
-            <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Changes apply instantly to live tickets</p>
+      <div className="mt-8 bg-gray-900 p-6 rounded-3xl border border-gray-800 shadow-2xl flex flex-col sm:flex-row justify-between items-center gap-4">
+         <div className="text-center sm:text-left">
+            <p className="text-sm font-black text-[#ff004d] uppercase tracking-tight">Warning</p>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Changes apply instantly to live tickets</p>
          </div>
          <button 
            onClick={handleSave}
            disabled={isSaving}
-           className="bg-[#ff004d] text-white px-8 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest flex items-center gap-2 active:scale-95 transition-all shadow-[0_10px_20px_-5px_rgba(255,0,77,0.4)] disabled:opacity-50"
+           className="w-full sm:w-auto bg-[#ff004d] text-white px-10 py-4 rounded-2xl text-[12px] font-black uppercase tracking-widest flex items-center justify-center gap-3 active:scale-95 transition-all shadow-[0_10px_20px_-5px_rgba(255,0,77,0.4)] disabled:opacity-50"
          >
-           {isSaving ? 'Synchronizing...' : 'Save All Configurations'} <Save size={16} />
+           {isSaving ? 'Synchronizing...' : 'Save All Configurations'} <Save size={18} />
          </button>
       </div>
 
