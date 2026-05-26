@@ -154,6 +154,7 @@ const AdminUserDetails = () => {
              time: t.purchaseTime || '00:00',
              drawSlots: {},
              totalWin: 0,
+             totalPurchase: 0,
              brand: (t.title || 'LOTTERY').split('-')[0].trim().toUpperCase()
           };
        }
@@ -173,6 +174,9 @@ const AdminUserDetails = () => {
           const winAmt = parseInt(String(t.prize || "0").replace(/[^\d]/g, '')) || 0;
           groups[pid].totalWin += winAmt;
        }
+
+       const cost = (parseFloat(t.price) || 0) * (parseInt(t.qty) || 1);
+       groups[pid].totalPurchase += cost;
     });
 
     return Object.values(groups).sort((a, b) => {
@@ -642,6 +646,28 @@ const AdminUserDetails = () => {
                            </div>
                         </div>
                      ))}
+
+                     {/* --- COMPACT TRANSACTION FOOTER --- */}
+                     <div className="bg-gray-950 p-4 text-white border-t-4 border-[#ff0000]">
+                        <div className="flex justify-between items-end">
+                           <div className="text-left">
+                              <div className="flex items-center gap-2 mb-2 opacity-30">
+                                 <ShieldCheck size={10} className="text-amber-400" />
+                                 <p className="text-[6px] font-black uppercase tracking-[0.2em] italic">Verified Result Ledger</p>
+                              </div>
+                              <p className="text-[8px] font-black uppercase text-gray-400 tracking-[0.2em] italic leading-none mb-1">Total Purchase</p>
+                              <p className="text-xl font-black font-condensed italic text-white tracking-tighter leading-none">
+                                 ₹ {group.totalPurchase.toLocaleString()}
+                              </p>
+                           </div>
+                           <div className="text-right">
+                              <p className="text-[8px] font-black uppercase text-amber-400 tracking-[0.2em] italic leading-none mb-1">Total Winnings</p>
+                              <p className="text-2xl font-black font-condensed italic text-amber-400 tracking-tighter leading-none">
+                                 ₹ {group.totalWin.toLocaleString()}
+                              </p>
+                           </div>
+                        </div>
+                     </div>
                   </div>
                ))}
              </div>
