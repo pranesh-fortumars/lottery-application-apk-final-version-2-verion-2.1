@@ -556,7 +556,7 @@ const AdminUserDetails = () => {
                </div>
                
                {transactionGroups.map((group) => (
-                  <div key={group.id} className="bg-white rounded-3xl shadow-xl border-2 border-[#ff0000]/10 overflow-hidden">
+                  <div key={group.id} className="bg-white rounded-3xl shadow-xl border-2 border-[#ff0000] overflow-hidden">
                      <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                         <div>
                            <p className="text-[8px] font-black text-[#ff0000] uppercase tracking-[0.3em] italic">Transaction Instance</p>
@@ -596,36 +596,36 @@ const AdminUserDetails = () => {
                            <div className="overflow-x-auto scrollbar-hide">
                               <table className="w-full text-center border-collapse table-fixed min-w-[320px]">
                                  <thead>
-                                    <tr className="bg-gray-50/30 border-y border-gray-100">
-                                       <th className="w-[10%] py-1.5 border-r border-gray-100 text-[7px] font-black uppercase text-gray-500 font-condensed italic">TYP</th>
-                                       <th className="w-[14%] py-1.5 border-r border-gray-100 text-[7px] font-black uppercase text-gray-500 font-condensed italic">BRD</th>
-                                       <th className="w-[30%] py-1.5 border-r border-gray-100 text-[7px] font-black uppercase text-gray-500 font-condensed italic">NUMBER</th>
-                                       <th className="w-[8%] py-1.5 border-r border-gray-100 text-[7px] font-black uppercase text-gray-500 font-condensed italic">Q</th>
-                                       <th className="w-[15%] py-1.5 border-r border-gray-100 text-[7px] font-black uppercase text-gray-500 font-condensed italic">TIER</th>
-                                       <th className="w-[23%] py-1.5 text-[7px] font-black uppercase text-gray-500 font-condensed italic">PRIZE</th>
+                                    <tr className="bg-gray-50/30 border-y-2 border-[#ff0000]">
+                                       <th className="w-[10%] py-1.5 border-r-2 border-[#ff0000] text-[7px] font-black uppercase text-gray-950 font-condensed italic">TYP</th>
+                                       <th className="w-[14%] py-1.5 border-r-2 border-[#ff0000] text-[7px] font-black uppercase text-gray-950 font-condensed italic">BRD</th>
+                                       <th className="w-[30%] py-1.5 border-r-2 border-[#ff0000] text-[7px] font-black uppercase text-gray-950 font-condensed italic">NUMBER</th>
+                                       <th className="w-[8%] py-1.5 border-r-2 border-[#ff0000] text-[7px] font-black uppercase text-gray-950 font-condensed italic">Q</th>
+                                       <th className="w-[15%] py-1.5 border-r-2 border-[#ff0000] text-[7px] font-black uppercase text-gray-950 font-condensed italic">TIER</th>
+                                       <th className="w-[23%] py-1.5 text-[7px] font-black uppercase text-gray-950 font-condensed italic">PRIZE</th>
                                     </tr>
                                  </thead>
                                  <tbody>
                                     {slotGroup.tickets.map((t, tIdx) => {
                                        const isWin = t.status === 'Won';
                                        return (
-                                          <tr key={tIdx} className={`group ${isWin ? 'bg-emerald-50/30' : 'border-b border-gray-50'}`}>
-                                             <td className="py-1.5 px-0 border-r border-gray-50 text-[8px] font-black text-gray-600 uppercase italic tracking-tighter leading-none text-center">
+                                          <tr key={tIdx} className={`group ${isWin ? 'bg-emerald-50/30' : ''}`}>
+                                             <td className="py-1.5 px-0 border-r-2 border-b-2 border-[#ff0000] text-[8px] font-black text-gray-950 uppercase italic tracking-tighter leading-none text-center">
                                                 {t.type}
                                              </td>
-                                             <td className="py-1.5 px-0 border-r border-gray-50 text-[11px] font-black font-condensed italic text-gray-600 leading-none text-center">
+                                             <td className="py-1.5 px-0 border-r-2 border-b-2 border-[#ff0000] text-[11px] font-black font-condensed italic text-gray-950 leading-none text-center">
                                                 {t.pos}
                                              </td>
-                                             <td className="py-1.5 px-0 border-r border-gray-50 text-base font-black font-condensed italic text-gray-950 tracking-normal leading-none text-center">
+                                             <td className="py-1.5 px-0 border-r-2 border-b-2 border-[#ff0000] text-base font-black font-condensed italic text-gray-950 tracking-normal leading-none text-center">
                                                 {t.num}
                                              </td>
-                                             <td className="py-1.5 px-0 border-r border-gray-50 text-[11px] font-black font-condensed italic text-[#ff0000] leading-none text-center">
+                                             <td className="py-1.5 px-0 border-r-2 border-b-2 border-[#ff0000] text-[11px] font-black font-condensed italic text-[#ff0000] leading-none text-center">
                                                 {t.qty}
                                              </td>
-                                             <td className="py-1.5 px-0 border-r border-gray-50 text-[7px] font-bold text-gray-400 italic leading-none text-center">
+                                             <td className="py-1.5 px-0 border-r-2 border-b-2 border-[#ff0000] text-[7px] font-bold text-gray-500 italic leading-none text-center">
                                                 {t.price}
                                              </td>
-                                             <td className="py-1.5 px-0.5 text-right align-middle">
+                                             <td className="py-1.5 px-0.5 border-b-2 border-[#ff0000] text-right align-middle">
                                                 <div className="flex flex-col items-end justify-center leading-none">
                                                    {isWin ? (
                                                       <p className="text-[11px] font-black text-emerald-600 font-condensed italic">₹{String(t.prize || "0").replace(/[^\d]/g, '')}</p>
