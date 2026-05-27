@@ -14,6 +14,24 @@ const SettingRow = ({ label, desc, children }) => (
   </div>
 );
 
+const InputField = ({ label, value, onChange }) => (
+  <div className="flex flex-col h-full justify-end">
+    <label className="text-[10px] font-black uppercase tracking-wider text-gray-600 mb-2 leading-tight text-center">{label}</label>
+    <input
+      type="text"
+      inputMode="decimal"
+      pattern="[0-9]*"
+      value={value || ''}
+      onChange={(e) => {
+        // Allow only numbers and decimals
+        const val = e.target.value.replace(/[^0-9.]/g, '');
+        onChange(val);
+      }}
+      className="w-full min-w-0 bg-gray-50 border border-gray-200 rounded-xl px-2 py-2.5 font-black text-gray-900 text-sm outline-none focus:bg-white focus:border-[#ff004d] transition-all shadow-inner text-center"
+    />
+  </div>
+);
+
 const AdminPrizeSettings = () => {
   const { prizeScheme, updateScheme } = useCart();
   const [localScheme, setLocalScheme] = useState(null);
@@ -110,17 +128,7 @@ const AdminPrizeSettings = () => {
     setIsSaving(false);
   };
 
-  const InputField = ({ label, value, onChange }) => (
-    <div className="flex flex-col h-full justify-end">
-      <label className="text-[10px] font-black uppercase tracking-wider text-gray-600 mb-2 leading-tight text-center">{label}</label>
-      <input
-        type="text"
-        value={value || ''}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full min-w-0 bg-gray-50 border border-gray-200 rounded-xl px-2 py-2.5 font-black text-gray-900 text-sm outline-none focus:bg-white focus:border-[#ff004d] transition-all shadow-inner text-center"
-      />
-    </div>
-  );
+
 
   return (
     <div className="space-y-6">
