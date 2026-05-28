@@ -17,6 +17,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { getBrandBySlot, isSlotClosed } from '../constants/lotteryConfig';
+import { initTimeSync, detectTimeFraud, getTrueISTDate } from '../utils/timeHelpers';
 
 const CartContext = React.createContext();
 
@@ -52,6 +53,8 @@ export const CartProvider = ({ children }) => {
 
   // --- Subscriptions ---
   React.useEffect(() => {
+    initTimeSync(); // Initialize server time synchronization
+
     // Subscribe to Global App Settings
     const unsubscribeSettings = onSnapshot(doc(db, 'settings', 'app'), (snapshot) => {
       if (snapshot.exists()) {
@@ -417,7 +420,14 @@ export const CartProvider = ({ children }) => {
     processAudit();
   }, [declaredResults, purchasedTickets, user]);
 
-  const addToCart = (entry) => setCart((prev) => [...prev, { ...entry, id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}` }]);
+  const addToCart = async (entry) => {
+    const fraud = await detectTimeFraud(user);
+    if (fraud) {
+      alert(fraud.message);
+      return;
+    }
+    setCart((prev) => [...prev, { ...entry, id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}` }]);
+  };
   const removeFromCart = (id) => setCart((prev) => prev.filter((item) => item.id !== id));
   const clearCart = () => setCart([]);
 
@@ -448,11 +458,17 @@ export const CartProvider = ({ children }) => {
       }
     }
 
+    const fraud = await detectTimeFraud(user);
+    if (fraud) {
+      alert(fraud.message);
+      return;
+    }
+
     try {
       const txId = `TX${Math.floor(100000 + Math.random() * 900000)}`;
       const batch = writeBatch(db);
 
-      const now = new Date();
+      const now = getTrueISTDate();
       const purchaseDate = now.toISOString().split('T')[0];
       const purchaseTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 

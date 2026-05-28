@@ -31,6 +31,8 @@ export const MARKET_GROUPS = {
  * @param {object} appSettings - Firestore settings for dynamic overrides
  * @returns {boolean} - True if slot is closed for purchasing
  */
+import { getTrueISTDate } from '../utils/timeHelpers';
+
 export const getCutoffTime = (drawTime, brand, appSettings) => {
   const parts = drawTime.match(/(\d+):(\d+)\s*(AM|PM)/);
   if (!parts) return null;
@@ -42,7 +44,7 @@ export const getCutoffTime = (drawTime, brand, appSettings) => {
   if (ampm === 'PM' && hours !== 12) hours += 12;
   if (ampm === 'AM' && hours === 12) hours = 0;
   
-  const cutoff = new Date();
+  const cutoff = getTrueISTDate();
   cutoff.setHours(hours, minutes, 0, 0);
   
   if (brand === 'DEAR' || brand === 'JACKPOT') {
@@ -56,7 +58,7 @@ export const getCutoffTime = (drawTime, brand, appSettings) => {
 
 export const isSlotClosed = (drawTime, brand, appSettings) => {
   if (appSettings?.globalSalesClosed) return true;
-  const now = new Date();
+  const now = getTrueISTDate();
   const cutoff = getCutoffTime(drawTime, brand, appSettings);
   return !cutoff || now >= cutoff;
 };

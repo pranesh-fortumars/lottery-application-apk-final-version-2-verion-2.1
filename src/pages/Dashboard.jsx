@@ -5,6 +5,7 @@ import { Mail, Diamond, QrCode, Shield } from 'lucide-react';
 import { usePayment } from '../context/PaymentContext';
 import { useCart } from '../context/CartContext';
 import { DRAW_SLOTS, getCutoffTime, isSlotClosed } from '../constants/lotteryConfig';
+import { getTrueISTDate } from '../utils/timeHelpers';
 import { SupportSection } from '../components/PageWrapper';
 
 const CountdownTimer = ({ drawTime, brand, appSettings }) => {
@@ -15,7 +16,7 @@ const CountdownTimer = ({ drawTime, brand, appSettings }) => {
       const cutoff = getCutoffTime(drawTime, brand, appSettings);
       if (!cutoff) return;
       
-      const now = new Date();
+      const now = getTrueISTDate();
       let diff = cutoff - now;
       
       if (diff < 0) {
