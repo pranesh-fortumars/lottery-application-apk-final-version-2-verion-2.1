@@ -324,21 +324,25 @@ export const CartProvider = ({ children }) => {
                 const brandScheme = res.prizes[res.brand] || res.prizes['DEAR'];
                 tierPrizes = brandScheme?.['4D']?.find(t => Number(t.price) === Number(ticket.price)) || {};
               } else {
-                tierPrizes = res.prizes?.['4D']?.[ticketPriceKey] || {};
+                if (Array.isArray(res.prizes?.['4D'])) {
+                  tierPrizes = res.prizes['4D'].find(t => Number(t.price) === Number(ticket.price)) || {};
+                } else {
+                  tierPrizes = res.prizes?.['4D']?.[ticketPriceKey] || {};
+                }
               }
 
-              if (ticketNum === winningCombos['4D_XABC']) {
+              if (ticketNum === winningCombos['4D_XABC'] && Number(tierPrizes.XABC || 0) > 0) {
                 isWinner = true;
-                winAmt = Number(tierPrizes.XABC || 0);
-              } else if (ticketNum.slice(-3) === winningCombos['3D_ABC']) {
+                winAmt = Number(tierPrizes.XABC);
+              } else if (ticketNum.slice(-3) === winningCombos['3D_ABC'] && Number(tierPrizes.ABC || 0) > 0) {
                 isWinner = true;
-                winAmt = Number(tierPrizes.ABC || 0);
-              } else if (ticketNum.slice(-2) === winningCombos['2D_BC']) {
+                winAmt = Number(tierPrizes.ABC);
+              } else if (ticketNum.slice(-2) === winningCombos['2D_BC'] && Number(tierPrizes.BC || 0) > 0) {
                 isWinner = true;
-                winAmt = Number(tierPrizes.BC || 0);
-              } else if (ticketNum.slice(-1) === winningCombos['1D_C']) {
+                winAmt = Number(tierPrizes.BC);
+              } else if (ticketNum.slice(-1) === winningCombos['1D_C'] && Number(tierPrizes.C || 0) > 0) {
                 isWinner = true;
-                winAmt = Number(tierPrizes.C || 0);
+                winAmt = Number(tierPrizes.C);
               }
             } else if (ticket.type === '3D') {
               // 3D Tiered Cascading Logic: ABC -> BC -> C
@@ -347,18 +351,22 @@ export const CartProvider = ({ children }) => {
                 const brandScheme = res.prizes[res.brand] || res.prizes['DEAR'];
                 tierPrizes = brandScheme?.['3D']?.find(t => Number(t.price) === Number(ticket.price)) || {};
               } else {
-                tierPrizes = res.prizes?.['3D']?.[ticketPriceKey] || {};
+                if (Array.isArray(res.prizes?.['3D'])) {
+                  tierPrizes = res.prizes['3D'].find(t => Number(t.price) === Number(ticket.price)) || {};
+                } else {
+                  tierPrizes = res.prizes?.['3D']?.[ticketPriceKey] || {};
+                }
               }
 
-              if (ticketNum === winningCombos['3D_ABC']) {
+              if (ticketNum === winningCombos['3D_ABC'] && Number(tierPrizes.ABC || 0) > 0) {
                 isWinner = true;
-                winAmt = Number(tierPrizes.ABC || 0);
-              } else if (ticketNum.slice(-2) === winningCombos['2D_BC']) {
+                winAmt = Number(tierPrizes.ABC);
+              } else if (ticketNum.slice(-2) === winningCombos['2D_BC'] && Number(tierPrizes.BC || 0) > 0) {
                 isWinner = true;
-                winAmt = Number(tierPrizes.BC || 0);
-              } else if (ticketNum.slice(-1) === winningCombos['1D_C']) {
+                winAmt = Number(tierPrizes.BC);
+              } else if (ticketNum.slice(-1) === winningCombos['1D_C'] && Number(tierPrizes.C || 0) > 0) {
                 isWinner = true;
-                winAmt = Number(tierPrizes.C || 0);
+                winAmt = Number(tierPrizes.C);
               }
             } else {
               // Standard 1D/2D Positional Logic (Non-tiered)
@@ -372,6 +380,7 @@ export const CartProvider = ({ children }) => {
                 } else {
                   winAmt = Number(res.prizes?.[ticket.type]?.[ticket.pos] || 0);
                 }
+                if (winAmt <= 0) isWinner = false; // Prevent 0-win scenarios
               }
             }
             
