@@ -11,9 +11,8 @@ An enterprise-grade, high-fidelity lottery management and play platform built fo
 - **Dynamic Betting Matrix**: Comprehensive support for 1D (Single Digit boards A, B, C), 2D (Double Digit combos AB, BC, AC), 3D (ABC), and 4D (XABC) combination patterns across multiple lottery markets.
 - **Automated Payout Engine**: Real-time winner detection and instant balance credit using atomic database transactions.
 - **Mandatory Payout Verification**: Secure onboarding workflow requiring verified banking details (Account Holder Name, Account Number, IFSC Code, UPI ID) before ticket purchases or withdrawal requests are permitted.
+- **Server-Authoritative Time Validation**: Advanced anti-fraud system enforcing strict Indian Standard Time (IST) checks via Firebase server timestamps, preventing users from bypassing slot closures by manipulating local device clocks.
 - **High-Fidelity Ledger & History**: Professional, receipt-style ticket history and a dedicated **Transaction History** hub with live status tracking (Pending, Approved, Rejected, Won, Active).
-- **Mobile-Optimized UX**: Platform-wide implementation of native mobile numeric keypads (`inputMode="numeric"`, `inputMode="decimal"`, `pattern="[0-9]*"`) for all amount, phone number, and ticket entry fields. Features ultra-compact, scroll-free responsive modal designs for optimal single-screen mobile interactions.
-- **Flexible Multi-ID Login**: Unified authentication field allowing users to securely log in using their registered Username, Mobile Number, or Email Address with case-insensitive robust matching.
 - **Referral Engine**: Integrated referral system rewarding users with instant bonus chips upon successful friend registration.
 - **Pull-To-Refresh Reactivity**: Custom-built mobile touch gesture system for instant, on-demand data synchronization without requiring page reloads.
 
@@ -54,10 +53,9 @@ graph TD
 
 - **Catch-Up Audit Engine**: A resilient automated auditing system that ensures winning tickets are accurately processed and credited even if a user logs in days after a result is declared.
 - **Standardized Market Cutoff Logic**: Precise draw schedules (DEAR at 01:00 PM, 06:00 PM, 08:00 PM; KERALA at 03:00 PM) enforced with automated 5-minute pre-draw cutoff buffers (`getCutoffTime`) and dynamic administrative overrides.
+- **Zero-Payout Elimination & Safe Matching**: The evaluation engine executes cascading partial-match validation (XABC -> ABC -> BC -> C) with strict `> 0` payout gating to instantly discard partial matches against disabled or zero-reward tiers.
+- **Legacy Schema Compatibility**: Integrated fallback parsers map legacy array-based prize structures into the modern `v2` Object schema seamlessly without data corruption.
 - **Secure Withdrawal Escrow Protocol**: Implements an instant escrow deduction methodology. When a user requests a withdrawal, funds are instantly secured/deducted to prevent double-spending vulnerabilities or negative balances. If an admin rejects the request, an automated live refund is instantly credited back to the user's active wallet.
-- **Fuzzy Sync & Data Normalization**: Built-in whitespace trimming, case normalization, and strict data-type parsing to guarantee flawless synchronization between administrative data entry and client-side evaluation.
-- **Atomic Reliability**: Utilizes Firestore `increment`, `updateDoc`, and `writeBatch` to ensure zero race conditions or financial discrepancies during multi-ticket purchases and balance adjustments.
-- **Live Ecosystem Subscriptions**: Built on top of Firestore `onSnapshot` listeners to immediately push data across the platform, eliminating stale data in admin and user interfaces.
 
 ---
 
