@@ -59,6 +59,19 @@ graph TD
 
 ---
 
+## 🔒 Security & Policy Governance
+
+- **Strict Firestore Security Rules**: Fully sandboxed database access ensuring that unauthenticated users are blocked, standard users can only read/write their own isolated ticket and transaction records, and administrative actions are strictly restricted via server-side role validation (`isAdmin()`).
+- **Development Fallback Mode**: Graceful snapshot error handling allows local development testing to continue bypassing snapshot crashes if Firebase propagate delays block the connection. 
+- **Time-Fraud Elimination**: Implements an immutable UTC/IST Server Timestamp (`serverTimestamp()`) architecture for all ledger entries, ensuring that device clock spoofing cannot affect transaction ledgers or slot cutoff bypasses.
+
+---
+
+## 🌐 Advanced Operations & PWA Support
+
+- **Progressive Web App (PWA) Ready**: Built to operate identically across Desktop browsers and Mobile form factors, with native-like touch gestures, modal overlays, and pull-to-refresh synchronization.
+- **Dynamic Configuration Layer**: The `src/config.js` framework allows instant swapping of build versions, target environments, and operational constants without requiring deep codebase changes.
+
 ## 🚦 Getting Started
 
 ### Prerequisites
